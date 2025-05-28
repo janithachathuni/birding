@@ -3,9 +3,9 @@ import {Link} from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="footer-container  text-white py-10 font-karla"
+    <footer className="footer-container border-t border-black text-white py-10 font-karla bg-emerald-950"
         style={{
-            backgroundImage: "linear-gradient(45deg, rgb(0, 0, 0), rgb(2, 48, 32), rgb(2, 48, 32))",
+            backgroundImage: "",
         color: "azure",
         }}
     >
