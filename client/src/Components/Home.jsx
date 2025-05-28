@@ -5,19 +5,7 @@ import kurulloImage from '../assets/kurullo.png'; // Import your image
 const Home = () => {
   return (
     <div className="min-h-screen bg-[#f8eec8] font-urbanist">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm py-4 px-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-gray-800">YourLogo</Link>
-          <div className="hidden md:flex space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-blue-500">Home</Link>
-            <Link to="/about" className="text-gray-600 hover:text-blue-500">About</Link>
-            <Link to="/contact" className="text-gray-600 hover:text-blue-500">Contact</Link>
-          </div>
-          <button className="md:hidden text-2xl">☰</button>
-        </div>
-      </nav>
-
+      
       {/* Hero Section with Your Image */}
       <main className="container mx-auto px-6 py-12">
         <div className="flex flex-col md:flex-row items-center gap-8">
