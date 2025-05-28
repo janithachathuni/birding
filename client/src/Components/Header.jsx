@@ -13,7 +13,7 @@ const Navbar = () => {
             alt="Kurullo Logo" 
             className="h-10 w-10 mr-2"
           />
-          <span className="text-3xl text-black "><Link to="/"><h1>Kurullo</h1></Link></span>
+          <span className="text-3xl text-emerald-950"><Link to="/"><h1>Kurullo</h1></Link></span>
         </div>
 
         {/* Right-aligned items */}
@@ -24,14 +24,12 @@ const Navbar = () => {
           <Link to="/birdlist" className="text-gray-900 hover:text-amber-900">
             Birdlist
           </Link>
-          <Link to="/login" className="text-gray-900 hover:text-amber-900">
-            Login
-          </Link>
+       
           <Link 
-            to="/signup" 
+            to="/login" 
             className="border border-black bg-[#f8eec8] px-4 py-2  hover:border-black hover:bg-amber-100 transition-colors"
           >
-            Sign Up
+            Sign in
           </Link>
         </div>
       </div>

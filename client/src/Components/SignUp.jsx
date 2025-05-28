@@ -21,7 +21,7 @@ const SignUp = () => {
                             <label className="text-left w-full">First Name</label>
                             <input 
                             type="text"
-                            className="border border-amber-900 p-2  w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                            className="border rounded border-amber-900 p-2  w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
                             />
                         </div>
 
@@ -29,7 +29,7 @@ const SignUp = () => {
                             <label className="text-left w-full">Last Name</label>
                             <input 
                             type="text"
-                            className="border border-amber-900 p-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                            className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
                             />
                         </div>
                     </div>
@@ -38,7 +38,7 @@ const SignUp = () => {
                     <label className="text-left w-full">Username</label>
                     <input 
                         type="text"
-                        className="border border-amber-900 p-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                     </div>
 
@@ -46,7 +46,7 @@ const SignUp = () => {
                     <label className="text-left w-full">Email</label>
                     <input 
                         type="email"
-                        className="border border-amber-900 p-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                     </div>
 
@@ -54,16 +54,22 @@ const SignUp = () => {
                     <label className="text-left w-full">Password</label>
                     <input 
                         type="password"
-                        className="border border-amber-900 p-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                     </div>
 
                     <button 
                     type="submit"
-                    className="w-full bg-amber-900 text-white py-2 px-4 rounded hover:bg-amber-800 transition-colors mt-6 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                    className="w-full bg-amber-900 rounded text-white py-2 px-4 hover:bg-amber-800 transition-colors mt-6 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                     >
-                    Sign Up
+                    Create account
                     </button>
+
+                    <span>Already have an account? 
+                        <button className="ml-5 border rounded border-black bg-[#f8eec8] px-4 py-2  hover:border-black hover:bg-amber-100 transition-colors">
+                            <Link to="/login" >Sign in</Link>
+                        </button>
+                    </span>
                 </form>
             </div>
         </div>
