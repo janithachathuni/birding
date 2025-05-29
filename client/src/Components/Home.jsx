@@ -5,7 +5,7 @@ import kurulloImage from '../assets/kurullo.png'; // Import your image
 const Home = () => {
   return (
     <div className="min-h-screen bg-[#f8eec8] font-urbanist">
-      
+
       {/* Hero Section with Your Image */}
       <main className="container mx-auto px-6 py-12">
         <div className="flex flex-col md:flex-row items-center gap-8">
@@ -28,14 +28,14 @@ const Home = () => {
             />
           </div>
         </div>
+
+        
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto text-center">
-          <p>© {new Date().getFullYear()} Your Company. All rights reserved.</p>
+      <div className='bg-white'>
+          hello
         </div>
-      </footer>
+
     </div>
   );
 };
