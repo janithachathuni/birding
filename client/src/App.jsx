@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {ThemeProvider} from './Context/ThemeContext';
 import Footer from './Components/Footer';
 import Home from './Components/Home';
 import Header from './Components/Header';
 import Login from './Components/Login';
 import SignUp from './Components/SignUp';
 import Dashboard from './Pages/Dashboard';
+
 
 import './App.css';
 
@@ -17,9 +19,14 @@ export default function App() {
 }
 
 function AppContent() {
+  const hideHeaderFooter = ['/dashboard', '/other-route'].includes(location.pathname);
+ 
+
   return (
+    
+
     <div className="app-container min-h-screen bg-[#fffdef] font-urbanist"> {/* Ensure this has proper styling */}
-      <Header/>
+      {!hideHeaderFooter && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />      
         <Route path="/login" element={<Login/>}/>
@@ -28,7 +35,7 @@ function AppContent() {
 
       </Routes>
     
-      <Footer />
+      {!hideHeaderFooter && <Footer />}
     </div>
   );
 }
