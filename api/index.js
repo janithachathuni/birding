@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 
 //mongodb configuration
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://birder-application:nbLE51snak0wtG57@cluster0.tahbmnf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -69,6 +69,25 @@ async function run() {
         //update
         const result = await birdCollections.updateOne(filter, updateDoc, options);
         res.send(result);
+    })
+
+    //delete a bird data
+    app.delete("book/:id", async(req, res) => {
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)};
+        const result = await birdCollections.deleteOne(filter);
+        res.send(result);
+    })
+
+    //finding a bird by family (filtering out data)
+    app.get("/all-birds", async(req, res) =>{
+      let query = {};
+      if(req.query?.family){
+        query = {family:req.query.family}
+      }
+
+      const result = await birdCollections.find(query).toArray();
+      res.send(result);
     })
 
     

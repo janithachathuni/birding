@@ -12,7 +12,7 @@ const SignUp = () => {
             ></div>
 
             {/* Form Column */}
-            <div className="w-1/2 flex items-center justify-center p-10">
+            <div className="w-1/2 flex items-center justify-center p-10 bg-[#fffdef]">
                 <form className="w-full max-w-md space-y-4">
                     <h1 className="text-3xl mb-10 text-left">Sign Up for Kurullo.lk</h1>
 

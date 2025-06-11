@@ -6,6 +6,7 @@ import Header from './Components/Header';
 import Login from './Components/Login';
 import SignUp from './Components/SignUp';
 import Dashboard from './Pages/Dashboard';
+import Blog from './Pages/Blog';
 
 
 import './App.css';
@@ -19,19 +20,20 @@ export default function App() {
 }
 
 function AppContent() {
-  const hideHeaderFooter = ['/dashboard', '/other-route'].includes(location.pathname);
+  const hideHeaderFooter = ['/dashboard', '/other-route', '/blog'].includes(location.pathname);
  
 
   return (
     
 
-    <div className="app-container min-h-screen bg-[#fffdef] font-urbanist"> {/* Ensure this has proper styling */}
+    <div className="app-container min-h-screen font-urbanist"> {/* Ensure this has proper styling */}
       {!hideHeaderFooter && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />      
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/blog" element={<Blog/>}/>
 
       </Routes>
     
