@@ -7,7 +7,7 @@ import Login from './Components/Login';
 import SignUp from './Components/SignUp';
 import Dashboard from './Pages/Dashboard';
 import Blog from './Pages/Blog';
-
+import SingleBird from './Pages/SingleBird';
 
 import './App.css';
 
@@ -34,6 +34,7 @@ function AppContent() {
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/blog" element={<Blog/>}/>
+        <Route path="/bird" element={<SingleBird/>}/>
 
       </Routes>
     

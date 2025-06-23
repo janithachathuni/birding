@@ -1,41 +1,50 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import kurulloImage from '../assets/kurullo.png'; // Import your image
+import React from "react";
+import backgroundimg from "../assets/backgroundimg.jpg";
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-[#f8eec8] font-urbanist">
+    <div className>
+      {/* Full-screen hero image */}
+      <div className="h-screen min-h-screen bg-contain bg-no-repeat bg-center" style={{ backgroundImage: `url(${backgroundimg})` }}>
 
-      {/* Hero Section with Your Image */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="md:w-1/2">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-              Welcome to Our Site
+      </div>
+
+      {/* Content sections */}
+      <div className="bg-white">
+        <section className="container mx-auto ">
+          <div className="max-w-4xl mx-auto px-8 py-20">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 text-emerald-900">
+              Welcome to Kurullo
             </h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Discover amazing things with our platform featuring Kurullo!
+            <p className="text-xl md:text-2xl mb-12 text-gray-700 px-8 py-20">
+              Discover the fascinating world of birds and nature
             </p>
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-              Get Started
-            </button>
           </div>
-          <div className="md:w-1/2">
-            <img 
-              src={kurulloImage} 
-              alt="Kurullo" 
-              className="w-full max-w-md mx-auto rounded-lg shadow-xl"
-            />
+        </section>
+
+        <section className="container mx-auto px-8 pb-20">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-emerald-900">
+              Discover Our World
+            </h2>
+            <div className="grid md:grid-cols-2 gap-12">
+              <div>
+                <h3 className="text-2xl font-semibold mb-4 text-emerald-800">About Us</h3>
+                <p className="text-gray-700 mb-6">
+                  Kurullo is dedicated to preserving and showcasing the beauty of avian life. 
+                  Our mission is to connect people with nature through education and conservation.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-4 text-emerald-800">Featured Birds</h3>
+                <p className="text-gray-700 mb-6">
+                  Explore our extensive collection of rare and beautiful bird species from around the world.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-
-        
-      </main>
-
-      <div className='bg-white'>
-          hello
-        </div>
-
+        </section>
+      </div>
     </div>
   );
 };
