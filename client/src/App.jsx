@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Outlet, BrowserRouter, Routes, Route } from 'react-router-dom';
 import {ThemeProvider} from './Context/ThemeContext';
 import Footer from './Components/Footer';
 import Home from './Components/Home';
