@@ -5,7 +5,7 @@ import Home from './Components/Home';
 import Header from './Components/Header';
 import Login from './Components/Login';
 import SignUp from './Components/SignUp';
-import Dashboard from './Pages/Dashboard';
+// import Dashboard from './Pages/Dashboard';
 import Blog from './Pages/Blog';
 import SingleBird from './Pages/SingleBird';
 
@@ -20,7 +20,7 @@ export default function App() {
 }
 
 function AppContent() {
-  const hideHeaderFooter = ['/dashboard', '/other-route', '/blog'].includes(location.pathname);
+  const hideHeaderFooter = ['/other-route', '/blog'].includes(location.pathname);
  
 
   return (
@@ -32,7 +32,7 @@ function AppContent() {
         <Route path="/" element={<Home />} />      
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
-        <Route path="/dashboard" element={<Dashboard/>}/>
+        {/* <Route path="/dashboard" element={<Dashboard/>}/> */}
         <Route path="/blog" element={<Blog/>}/>
         <Route path="/bird" element={<SingleBird/>}/>
 
