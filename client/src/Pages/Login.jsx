@@ -74,7 +74,7 @@ const Login = () => {
 
                     <span>Don't have an account? 
                         <button className="ml-5 border rounded border-amber-900 bg-[#f8eec8] px-4 py-2 hover:border-black hover:bg-amber-100 transition-colors">
-                            <Link to="/signup">Sign up</Link>
+                            <Link to="/sign-up">Sign up</Link>
                         </button>
                     </span>
                 </form>

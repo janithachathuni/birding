@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, MessageCircle, X } from "lucide-react";
 import UserSidebar from "../../Components/UserSidebar";
-import default_profile_pic from "../assets/default_profile_pic.png";
-import littlegrebe from "../assets/littlegrebe.jpg";
+// import default_profile_pic from "../assets/default_profile_pic.png";
+// import littlegrebe from "../assets/littlegrebe.jpg";
 
 const Dashboard = () => {
   const [isLiked, setIsLiked] = useState(false);
@@ -47,7 +47,7 @@ const Dashboard = () => {
             <X size={32} />
           </button>
           <img
-            src={littlegrebe}
+            // src={littlegrebe}
             alt="Full screen view"
             className="max-h-screen max-w-screen object-contain select-none"
             onClick={toggleFullScreen}
@@ -102,7 +102,7 @@ const Dashboard = () => {
         <div className="w-[35%] p-6">
           <div className="flex items-center space-x-4 border p-4 rounded-lg bg-white shadow-sm">
             <img
-              src={default_profile_pic}
+              // src={default_profile_pic}
               alt="User profile"
               className="w-16 h-16 rounded-full object-cover select-none"
               onContextMenu={handleCopy}
