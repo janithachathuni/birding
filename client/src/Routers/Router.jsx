@@ -16,7 +16,7 @@ import AdminDashboard from '../Pages/Admin/Dashboard'
 
 
 //birder
-import BirderDashboard from '../Pages/Birder_Moderator/Dashboard';
+import BirderDashboard from '../Pages/Birder/Dashboard';
 
 const Router = createBrowserRouter([
     {
