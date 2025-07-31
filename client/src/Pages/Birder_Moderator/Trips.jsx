@@ -1,11 +1,11 @@
 import React from 'react'
 
-const Forum = () => {
+const Trips = () => {
   return (
     <div>
-      Forum
+      Birder trip list
     </div>
   )
 }
 
-export default Forum
+export default Trips

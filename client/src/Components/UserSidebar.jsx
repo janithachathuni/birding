@@ -16,7 +16,7 @@ const UserSidebar = () => {
           <span className="flex">
             <Origami className="h-5 w-5 text-gray-600" />
             <Link to="/dashboard" className="block w-full">
-              Your Feed
+              Dashboard
             </Link>
           </span>
         </li>

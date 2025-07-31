@@ -7,7 +7,7 @@ export default function App() {
   // x.toString();
   return (
     <View style={styles.container}>
-      <Text>Hello Susantha Sar</Text>
+      <Text>Hello Susantha Sarkjhgf</Text>
       <StatusBar style="auto" />
     </View>
   );
