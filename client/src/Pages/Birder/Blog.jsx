@@ -1,11 +1,15 @@
-import React from 'react'
+import React from 'react';
+import UserSidebar from '../../Components/UserSidebar';
 
 const Blog = () => {
   return (
-    <div>
-      Birder blog
+    <div className="flex min-h-screen bg-white">
+      <UserSidebar />
+      <div className="flex-1 ml-64 p-4">
+        <h1>Blog</h1>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Blog
+export default Blog;

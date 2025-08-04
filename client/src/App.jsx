@@ -6,19 +6,22 @@ import Navbar from './Components/Navbar';
 function App() {
   const location = useLocation();
   
-  // List of paths where Navbar should be *hidden*
-  const noNavbarPaths = [
-    // Add paths here where Navbar should NOT appear
-    // (empty in this case since we want Navbar on all pages)
+  // Paths where Navbar should appear
+  const showNavbarPaths = [
+    '/', 
+    '/login', 
+    '/register'
   ];
 
-  // Check if current path is NOT in noNavbarPaths
-  const shouldShowNavbar = !noNavbarPaths.includes(location.pathname);
+  // Check if current path matches exactly or starts with /admin
+  const shouldShowNavbar = 
+    showNavbarPaths.includes(location.pathname) ||
+    location.pathname.startsWith('/admin');
 
   return (
     <div className="app-container">
       {shouldShowNavbar && <Navbar />}
-      <Outlet /> {/* Renders the matched child route */}
+      <Outlet />
     </div>
   );
 }
