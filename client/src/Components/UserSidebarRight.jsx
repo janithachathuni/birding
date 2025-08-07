@@ -19,7 +19,7 @@ const UserSidebarRight = () => {
   const popularDiscussions = [
     {
       id: 1,
-      title: "Is this a juvenile Bald Eagle or Golden Eagle?",
+      title: "What type of Eagle is this?",
       author: "EagleWatcher",
       replies: 42,
       upvotes: 156,
@@ -29,8 +29,8 @@ const UserSidebarRight = () => {
     },
     {
       id: 2,
-      title: "Best locations for shorebird photography in Florida",
-      author: "ShoreBirdLover",
+      title: "Best locations for birdwatching",
+      author: "BirdLover",
       replies: 28,
       upvotes: 112,
       downvotes: 3,
@@ -68,6 +68,7 @@ const UserSidebarRight = () => {
   const renderPageSpecificContent = () => {
     switch(currentPath) {
       case '/birder/forum':
+      case '/birder/discussion':
         return (
           <div className="space-y-6">
             {/* Search Bar */}

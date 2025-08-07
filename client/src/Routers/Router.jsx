@@ -23,6 +23,7 @@ import BirderFollowing from "../Pages/Birder/Following";
 import BirderSettings from "../Pages/Birder/Settings";
 import BirderTrips from "../Pages/Birder/Trips";
 import BirderNotifications from "../Pages/Birder/Notifications";
+import BirderDiscussion from "../Pages/Birder/Discussion";
 
 const Router = createBrowserRouter([
   {
@@ -98,6 +99,12 @@ const Router = createBrowserRouter([
             path: "notifications",
             element: <BirderNotifications />,
           },
+
+          // discussion/:id
+          {
+            path: "discussion",
+            element: <BirderDiscussion />,
+          }
         ],
       },
 
