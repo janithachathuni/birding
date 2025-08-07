@@ -9,11 +9,11 @@ import {
   FiSettings,
   FiLogOut
 } from 'react-icons/fi';
-import { useLocation, NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const UserSidebar = () => {
   const location = useLocation();
-  
+
   const navItems = [
     { path: '/birder/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
     { path: '/birder/blog', icon: <FiFileText size={20} />, label: 'Blog' },
@@ -25,14 +25,13 @@ const UserSidebar = () => {
   ];
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white flex flex-col border-r border-gray-200">
+    <div className="fixed top-0 left-0 h-screen w-[20%] bg-white flex flex-col border-r border-gray-200">
       {/* Sidebar Header */}
       <div className="p-4 -mb-5">
         <NavLink to="/" className="flex justify-center">
           <h2 className="text-2xl font-extrabold text-[#506142]">Kurullo</h2>
         </NavLink>
       </div>
-      
 
       {/* Navigation Items */}
       <div className="flex-1 overflow-y-auto py-4">
@@ -41,10 +40,11 @@ const UserSidebar = () => {
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) => 
-                `flex items-center px-3 py-2 rounded-lg transition-colors ${isActive 
-                  ? 'bg-[#f5f6f5] text-[#425137]' 
-                  : 'text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142]'
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-[#f5f6f5] text-[#425137]'
+                    : 'text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142]'
                 }`
               }
             >
@@ -54,7 +54,7 @@ const UserSidebar = () => {
           ))}
         </nav>
       </div>
-      
+
       {/* Logout at bottom */}
       <div className="p-4 border-t border-gray-200">
         <button className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors">

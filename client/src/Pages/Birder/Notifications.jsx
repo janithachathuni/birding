@@ -5,7 +5,7 @@ const Notifications = () => {
   return (
     <div className="flex min-h-screen bg-white">
       <UserSidebar />
-      <div className="flex-1 ml-64 p-4">
+      <div className="flex flex-1 p-4 ml-[20%] mr-[20%]">
         <h1>Notifs page</h1>
       </div>
     </div>

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { Heart, MessageCircle, X } from "lucide-react";
 import UserSidebar from "../../Components/UserSidebar";
-import default_profile_pic from "../../assets/default_profile_pic.png";
+import UserSidebarRight from "../../Components/UserSidebarRight";
 import littlegrebe from "../../assets/littlegrebe.jpg";
 
 const Dashboard = () => {
@@ -59,10 +58,10 @@ const Dashboard = () => {
 
       <UserSidebar />
 
-      {/* Main content - Adjusted for sidebar */}
-      <div className="flex flex-1 ml-64"> {/* Added ml-64 to account for sidebar width */}
-        {/* Left panel - Feed */}
-        <div className="w-[65%] border-r border-gray-200">
+      {/* Main content with margins for fixed sidebars */}
+      <div className="flex flex-1 p-4 ml-[20%] mr-[25%]">
+        {/* Left panel - Feed (full width here since no right panel) */}
+        <div className="w-full ">
           {/* Tabs */}
           <div className="flex border-b border-amber-200">
             <button className="w-1/2 py-4 text-center text-xl font-medium hover:bg-amber-50">
@@ -97,24 +96,9 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Right panel - User profile */}
-        <div className="w-[35%] p-6">
-          <div className="flex items-center space-x-4 border p-4 rounded-lg bg-white shadow-sm">
-            <img
-              src={default_profile_pic}
-              alt="User profile"
-              className="w-16 h-16 rounded-full object-cover select-none"
-              onContextMenu={handleCopy}
-              onDragStart={preventDragHandler}
-            />
-            <div>
-              <div className="text-gray-500 text-sm">@username</div>
-              <div className="text-gray-900 font-semibold">Janitha Chathuni</div>
-            </div>
-          </div>
-        </div>
       </div>
+
+      <UserSidebarRight />
     </div>
   );
 };
