@@ -44,7 +44,7 @@ const UserSidebar = () => {
                 `flex items-center px-3 py-2 rounded-lg transition-colors ${
                   isActive
                     ? 'bg-[#f5f6f5] text-[#425137]'
-                    : 'text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142]'
+                    : 'text-black hover:bg-[#f5f6f5] hover:text-[#506142]'
                 }`
               }
             >

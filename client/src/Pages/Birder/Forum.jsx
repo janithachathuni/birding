@@ -109,7 +109,7 @@ const Forum = () => {
                     <div className="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0"></div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-[#506142]">{discussion.title}</h3>
+                        <h3 className="font-medium text-black]">{discussion.title}</h3>
                         <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
                           {discussion.topic}
                         </span>

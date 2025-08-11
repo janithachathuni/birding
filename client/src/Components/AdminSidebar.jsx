@@ -15,13 +15,12 @@ const UserSidebar = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/birder/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
-    { path: '/birder/blog', icon: <FiFileText size={20} />, label: 'Statistics' },
-    { path: '/birder/checklists', icon: <FiCheckSquare size={20} />, label: 'Manage Moderators' },
-    { path: '/birder/trips', icon: <FiMap size={20} />, label: 'Content Moderation' },
-    { path: '/birder/notifications', icon: <FiBell size={20} />, label: 'Notifications' },
-    { path: '/birder/forum', icon: <FiMessageSquare size={20} />, label: 'Forum' },
-    { path: '/birder/settings', icon: <FiSettings size={20} />, label: 'Settings' },
+    { path: '/admin/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
+    { path: '/admin/advertisements', icon: <FiFileText size={20} />, label: 'Statistics' },
+    { path: '/admin/content-moderation', icon: <FiCheckSquare size={20} />, label: 'Manage Moderators' },
+    { path: '/admin/manage moderators', icon: <FiMap size={20} />, label: 'Content Moderation' },
+    { path: '/admin/statistics', icon: <FiBell size={20} />, label: 'Notifications' },
+    { path: '/admin/settings', icon: <FiSettings size={20} />, label: 'Settings' },
   ];
 
   return (

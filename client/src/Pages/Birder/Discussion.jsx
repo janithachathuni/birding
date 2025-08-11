@@ -170,13 +170,13 @@ const Discussion = () => {
                       <>
                         <button 
                           onClick={prevImage}
-                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 bg-opacity-50 text-white p-2 rounded-full"
                         >
                           <FaChevronLeft />
                         </button>
                         <button 
                           onClick={nextImage}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 bg-opacity-50 text-white p-2 rounded-full"
                         >
                           <FaChevronRight />
                         </button>
