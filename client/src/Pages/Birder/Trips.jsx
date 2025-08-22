@@ -89,13 +89,14 @@ const Trips = () => {
       <UserSidebar />
       <div className="flex-1 p-4 ml-[20%] mr-[30%]">
         <div className="pt-4 mb-4 w-full rounded-lg">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <p className="text-xl font-bold">Track your trips</p>
             <button
               onClick={handleAddTripClick}
-              className="p-2 bg-[#506142] text-white rounded-full hover:bg-[#3a4a32] transition-colors"
+              className="flex items-center gap-2 p-2 bg-[#506142] text-white rounded-full hover:bg-[#3a4a32] transition-colors"
             >
-              +
+              <span className="w-6 h-6 flex items-center justify-center">+</span>
+              <span className="pr-2">Add New Trip</span>
             </button>
           </div>
 
@@ -124,7 +125,7 @@ const Trips = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-16">
           {filteredTrips.length > 0 ? (
             filteredTrips.map((trip) => (
               <div
@@ -157,15 +158,17 @@ const Trips = () => {
             </div>
           )}
         </div>
+
+        <div className="fixed bottom-8 right-8">
+          <button
+            onClick={handleAddTripClick}
+            className="w-14 h-14 flex items-center justify-center bg-[#506142] text-white rounded-full hover:bg-[#3a4a32] transition-colors shadow-lg text-2xl"
+          >
+            +
+          </button>
+        </div>
       </div>
       <UserSidebarRight />
-
-      <button
-        onClick={handleAddTripClick}
-        className="fixed bottom-8 right-8 p-4 bg-[#506142] text-white rounded-full hover:bg-[#3a4a32] transition-colors shadow-lg"
-      >
-        +
-      </button>
 
       {showPopup && (
         <div className="fixed inset-0 bg-black/50  flex items-center justify-center z-50">
