@@ -15,8 +15,9 @@ function App() {
 
   // Check if current path matches exactly or starts with /admin
   const shouldShowNavbar = 
-    showNavbarPaths.includes(location.pathname) ||
-    location.pathname.startsWith('/admin');
+    showNavbarPaths.includes(location.pathname) 
+    // ||
+    // location.pathname.startsWith('/admin');
 
   return (
     <div className="app-container">

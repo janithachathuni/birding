@@ -12,6 +12,8 @@ import AdminDashboard from "../Pages/Admin/Dashboard";
 import AdminContentModeration from "../Pages/Admin/ContentModeration";
 import AdminModeratorManagement from "../Pages/Admin/ModeratorManagement";
 import AdminSettings from "../Pages/Admin/Settings";
+import AdminStatistics from "../Pages/Admin/Statistics";
+import AdminAdvertisements from "../Pages/Admin/Advertisements";
 
 //birder
 import BirderDashboard from "../Pages/Birder/Dashboard";
@@ -50,9 +52,34 @@ const Router = createBrowserRouter([
         path: "/admin",
         children: [
           {
-            index: true,
+            path: "content-moderation",
+            element: <AdminContentModeration />,
+          },
+
+          {
+            path: "moderator-management",
+            element: <AdminModeratorManagement />,
+          },
+
+          {
+            path: "settings",
+            element: <AdminSettings />,
+          },
+
+          {
+            path: "dashboard",
             element: <AdminDashboard />,
           },
+
+          {
+            path: "statistics",
+            element: <AdminStatistics />,
+          },
+
+          {
+            path: "advertisements",
+            element: <AdminAdvertisements />,
+          }
         ],
       },
 

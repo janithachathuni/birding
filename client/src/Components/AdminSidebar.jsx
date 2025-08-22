@@ -1,11 +1,11 @@
 import React from 'react';
 import { 
   FiHome, 
-  FiFileText, 
-  FiCheckSquare, 
-  FiMap, 
-  FiBell,
-  FiMessageSquare,
+  FiBarChart2, 
+  FiShield, 
+  FiUsers, 
+  FiBell, 
+  FiMonitor, 
   FiSettings,
   FiLogOut
 } from 'react-icons/fi';
@@ -14,14 +14,16 @@ import { NavLink, useLocation } from 'react-router-dom';
 const UserSidebar = () => {
   const location = useLocation();
 
-  const navItems = [
-    { path: '/admin/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
-    { path: '/admin/advertisements', icon: <FiFileText size={20} />, label: 'Statistics' },
-    { path: '/admin/content-moderation', icon: <FiCheckSquare size={20} />, label: 'Manage Moderators' },
-    { path: '/admin/manage moderators', icon: <FiMap size={20} />, label: 'Content Moderation' },
-    { path: '/admin/statistics', icon: <FiBell size={20} />, label: 'Notifications' },
-    { path: '/admin/settings', icon: <FiSettings size={20} />, label: 'Settings' },
-  ];
+const navItems = [
+  { path: '/admin/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
+  { path: '/admin/statistics', icon: <FiBarChart2 size={20} />, label: 'Statistics' },
+  { path: '/admin/content-moderation', icon: <FiShield size={20} />, label: 'Content Moderation' },
+  { path: '/admin/manage-moderators', icon: <FiUsers size={20} />, label: 'Manage Moderators' },
+  { path: '/admin/notifications', icon: <FiBell size={20} />, label: 'Notifications' },
+  { path: '/admin/advertisements', icon: <FiMonitor size={20} />, label: 'Advertisements' },
+  { path: '/admin/settings', icon: <FiSettings size={20} />, label: 'Settings' },
+];
+
 
   return (
     <div className="fixed top-0 left-0 h-screen w-[20%] bg-white flex flex-col border-r border-gray-200">

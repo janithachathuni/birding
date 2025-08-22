@@ -31,6 +31,62 @@ const mockChecklists = [
     speciesCount: 20,
     date: "2024-06-20",
   },
+
+  {
+    id: 5,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 6,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 7,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 8,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 9,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 10,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
+
+  {
+    id: 11,
+    title: "Morning Bird Survey",
+    tripPlace: "Thalangama Wetland",
+    speciesCount: 12,
+    date: "2024-07-10",
+  },
 ];
 
 const Checklists = () => {
