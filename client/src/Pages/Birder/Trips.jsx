@@ -215,7 +215,7 @@ const Trips = () => {
 
       <div className="flex-1 ml-[20%] mr-[30%]">
         {/* Sticky top section */}
-        <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
+        <div className=" bg-white z-10 border-b border-gray-200">
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <p className="text-xl font-bold">Track your trips</p>
@@ -235,7 +235,7 @@ const Trips = () => {
                 <input
                   type="text"
                   placeholder="Search trips by title or location..."
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-2 pl-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -278,7 +278,7 @@ const Trips = () => {
                         {trip.status === "completed" && (
                           <span>Species Spotted: {trip.speciesSpotted}</span>
                         )}
-                        <span>Date: {trip.date}</span>
+                        {/* <span>Date: {trip.date}</span> */}
                       </div>
                     </div>
                   </div>
