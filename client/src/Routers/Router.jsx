@@ -57,7 +57,7 @@ const Router = createBrowserRouter([
           },
 
           {
-            path: "moderator-management",
+            path: "manage-moderators",
             element: <AdminModeratorManagement />,
           },
 
@@ -78,6 +78,11 @@ const Router = createBrowserRouter([
 
           {
             path: "advertisements",
+            element: <AdminAdvertisements />,
+          },
+
+          {
+            path: "notifications",
             element: <AdminAdvertisements />,
           }
         ],

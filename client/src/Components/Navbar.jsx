@@ -13,7 +13,7 @@ const Navbar = () => {
             alt="Kurullo Logo" 
             className="h-10 w-10 mr-2"
           />
-          <span className="text-3xl text-emerald-950"><Link to="/"><h1>Kurullo</h1></Link></span>
+          <span className="text-3xl font-extrabold text-[#506142]"><Link to="/"><h1>Kurullo</h1></Link></span>
         </div>
 
         {/* Right-aligned items */}
