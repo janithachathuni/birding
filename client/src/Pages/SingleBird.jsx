@@ -1,21 +1,17 @@
-import React from 'react';
+import React from "react";
+import UserSidebar from "../../Components/UserSidebar";
 
 const SingleBird = () => {
-    return (
-        <div className="min-h-screen flex">
-            {/* Container for both columns */}
-            <div className="flex w-full">
-                {/* First column with margin */}
-                <div className="ml-20 w-2/3">  {/* Adjust ml-48 as needed for your margin */}
-                    hello
-                </div>
-                {/* Second column - position won't be affected by first column's margin */}
-                <div className="w-1/3">
-                    hello``
-                </div>
-            </div>
+  return (
+    <div className="flex min-h-screen bg-white">
+      <UserSidebar />
+      <div className="flex flex-1 p-4 ml-[20%] mr-[30%]">
+        <div className="p-4 bg-[#f5f6f5] w-full rounded-lg">
+          <h1>Bird details</h1>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default SingleBird;

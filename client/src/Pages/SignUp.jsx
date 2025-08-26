@@ -1,8 +1,21 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 import signupImage1 from '../assets/signup_image1.jpg';
+import { useState } from "react";
+import axios from 'axios';
 
 const SignUp = () => {
+    const [username, setUsername] = useState();
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        axios.post('', {username, email, password})
+        .then(result=> console.log(result))
+        .catch(err=> console.log(err));
+    }
+
     return(
         <div className="min-h-screen flex">
             {/* Image Column - Background */}
@@ -13,32 +26,17 @@ const SignUp = () => {
 
             {/* Form Column */}
             <div className="w-1/2 flex items-center justify-center p-10 bg-[#fffdef]">
-                <form className="w-full max-w-md space-y-4">
+                <form className="w-full max-w-md space-y-4"
+                onSubmit={handleSubmit}
+                >
                     <h1 className="text-3xl mb-10 text-left">Sign Up for Kurullo.lk</h1>
-
-                    <div className="flex space-x-4">  {/* This container makes children side by side */}
-                        <div className="flex-1 flex flex-col items-start space-y-1">
-                            <label className="text-left w-full">First Name</label>
-                            <input 
-                            type="text"
-                            className="border rounded border-amber-900 p-2  w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
-                            />
-                        </div>
-
-                        <div className="flex-1 flex flex-col items-start space-y-1">
-                            <label className="text-left w-full">Last Name</label>
-                            <input 
-                            type="text"
-                            className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
-                            />
-                        </div>
-                    </div>
 
                     <div className="flex flex-col items-start space-y-1">
                     <label className="text-left w-full">Username</label>
                     <input 
                         type="text"
                         className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        onChange={(e) => setUsername(e.target.value)}
                     />
                     </div>
 
@@ -47,6 +45,7 @@ const SignUp = () => {
                     <input 
                         type="email"
                         className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                     </div>
 
@@ -55,6 +54,7 @@ const SignUp = () => {
                     <input 
                         type="password"
                         className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        onChange={(e) => setPassword(e.target.value)}
                     />
                     </div>
 
