@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import backgroundimg from '../assets/backgroundimg.jpg';
 import Footer from '../Components/footer';
-import appStoreImg from '../assets/appstore.png';   // save cropped App Store image in assets
-import playStoreImg from '../assets/playstore.png'; // save cropped Play Store image in assets
+// import appStoreImg from '../assets/appstore.png';   // save cropped App Store image in assets
+// import playStoreImg from '../assets/playstore.png'; // save cropped Play Store image in assets
 
 // Mock gallery photos (replace with real user data)
 const galleryPhotos = [
@@ -28,7 +28,7 @@ const Home = () => {
       {/* Hero Section */}
       <div
         className="relative h-screen bg-cover bg-center flex items-center justify-center"
-        style={{ backgroundImage: `url(${backgroundimg})` }}
+        style={{ backgroundImage: `https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg` }}
       >
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="relative z-10 text-center text-white max-w-2xl px-4">
@@ -42,10 +42,10 @@ const Home = () => {
 
           <div className="flex flex-col md:flex-row justify-center gap-4 mb-6">
             <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer">
-              <img src={appStoreImg} alt="App Store" className="h-12" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="App Store" className="h-12" />
             </a>
             <a href="https://play.google.com" target="_blank" rel="noopener noreferrer">
-              <img src={playStoreImg} alt="Google Play" className="h-12" />
+              <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Google Play" className="h-12" />
             </a>
           </div>
 
