@@ -7,6 +7,9 @@ import Home from "../Components/Home";
 import Login from "../Pages/Login";
 import SignUp from "../Pages/SignUp";
 
+//general pages
+import SingleBird from "../Pages/SingleBird";
+
 //admin
 import AdminDashboard from "../Pages/Admin/Dashboard";
 import AdminContentModeration from "../Pages/Admin/ContentModeration";
@@ -14,6 +17,11 @@ import AdminModeratorManagement from "../Pages/Admin/ModeratorManagement";
 import AdminSettings from "../Pages/Admin/Settings";
 import AdminStatistics from "../Pages/Admin/Statistics";
 import AdminAdvertisements from "../Pages/Admin/Advertisements";
+
+// admin, bird data
+import AdminBirdData from "../Pages/Admin/BirdData";
+import AdminEditBirdData from "../Pages/Admin/EditBirdData";
+import AdminAddNewBirdData from "../Pages/Admin/AddNewBirdData";
 
 //birder
 import BirderDashboard from "../Pages/Birder/Dashboard";
@@ -45,6 +53,11 @@ const Router = createBrowserRouter([
       {
         path: "/sign-up",
         element: <SignUp />,
+      },
+
+      {
+        path: "/bird",
+        element: <SingleBird />,
       },
 
       //admin routes
@@ -84,6 +97,21 @@ const Router = createBrowserRouter([
           {
             path: "notifications",
             element: <AdminAdvertisements />,
+          },
+
+          {
+            path: "bird-data",
+            element: <AdminBirdData />,
+          },
+
+          {
+            path: "edit-bird",
+            element: <AdminEditBirdData />,
+          },
+
+          {
+            path: "add-bird",
+            element: <AdminAddNewBirdData />,
           }
         ],
       },

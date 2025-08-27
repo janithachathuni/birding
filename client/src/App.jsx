@@ -18,6 +18,7 @@ function App() {
     showNavbarPaths.includes(location.pathname) 
     // ||
     // location.pathname.startsWith('/admin');
+    location.pathname.startsWith('/bird');
 
   return (
     <div className="app-container">

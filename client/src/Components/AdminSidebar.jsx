@@ -7,15 +7,18 @@ import {
   FiBell, 
   FiMonitor, 
   FiSettings,
-  FiLogOut
+  FiLogOut,
+  FiDatabase
 } from 'react-icons/fi';
 import { NavLink, useLocation } from 'react-router-dom';
+
 
 const UserSidebar = () => {
   const location = useLocation();
 
 const navItems = [
   { path: '/admin/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
+  { path: '/admin/bird-data', icon: <FiDatabase size={20} />, label: 'Bird Database' },
   { path: '/admin/statistics', icon: <FiBarChart2 size={20} />, label: 'Statistics' },
   { path: '/admin/content-moderation', icon: <FiShield size={20} />, label: 'Content Moderation' },
   { path: '/admin/manage-moderators', icon: <FiUsers size={20} />, label: 'Manage Moderators' },
