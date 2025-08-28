@@ -146,7 +146,7 @@ const BirdData = () => {
       <AdminSidebar />
 
       {/* Main Content */}
-      <div className="w-4/5 p-6 ml-auto">
+      <div className="w-4/5 p-4 ml-auto">
         {/* Header Section */}
         <div className="bg-[#f5f6f5] rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
