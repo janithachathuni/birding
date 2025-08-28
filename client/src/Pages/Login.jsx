@@ -11,10 +11,10 @@ const Login = () => {
 const handleSubmit = (e) => {
   e.preventDefault();
 
-  console.log("Making request to:", "http://localhost:3001/login");
+  console.log("Making request to:", "http://localhost:3001/api/auth/login");
 
   axios
-    .post("http://localhost:3001/login", { email, password })
+    .post("http://localhost:3001/api/auth/login", { email, password })
     .then((result) => {
       console.log(result);
 

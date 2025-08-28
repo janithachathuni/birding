@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-const RegisterModel = require('./models/Register');
+const RegisterModel = require('./models/User');
 
 const app = express();
 

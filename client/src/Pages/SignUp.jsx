@@ -1,23 +1,47 @@
 import React from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import signupImage1 from "../assets/signup_image1.jpg";
 import { useState } from "react";
 import axios from "axios";
 
 const SignUp = () => {
-  const [username, setUsername] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+    
+    // Basic validation
+    if (!username || !email || !password) {
+      setError("All fields are required");
+      return;
+    }
+
     axios
-      .post("http://localhost:3001/register", { username, email, password })
-      .then((result) => console.log(result))
-      .catch((err) => console.log(err));
-      navigate("/login");
+      .post("http://localhost:3001/api/auth/register", { 
+        username, 
+        email, 
+        password 
+      })
+      .then((result) => {
+        console.log(result);
+        if (result.data.message === "Account created successfully") {
+          navigate("/login");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        if (err.response && err.response.data && err.response.data.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Registration failed. Please try again.");
+        }
+      });
   };
 
   return (
@@ -33,12 +57,19 @@ const SignUp = () => {
         <form className="w-full max-w-md space-y-4" onSubmit={handleSubmit}>
           <h1 className="text-3xl mb-10 text-left">Sign Up for Kurullo.lk</h1>
 
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
           <div className="flex flex-col items-start space-y-1">
             <label className="text-left w-full">Username</label>
             <input
               type="text"
               className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
           </div>
 
@@ -48,6 +79,7 @@ const SignUp = () => {
               type="email"
               className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -57,6 +89,7 @@ const SignUp = () => {
               type="password"
               className="border rounded border-amber-900 p-2 w-full focus:outline-none focus:ring-1 focus:ring-amber-500"
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 
