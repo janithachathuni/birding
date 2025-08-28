@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs');
 const RegisterSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  role: { type: String, enum: ['admin', 'birder'], default: 'birder' } // Example roles
 });
 
 // Pre-save hook to hash password before saving

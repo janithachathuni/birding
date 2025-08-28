@@ -4,8 +4,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 //extensions
 import App from "../App";
 import Home from "../Components/Home";
+import Error404 from "../Pages/Error404";
 import Login from "../Pages/Login";
 import SignUp from "../Pages/SignUp";
+import ForgotPassword1 from "../Pages/ForgotPassword1";
+import ForgotPassword2 from "../Pages/ForgotPassword2";
 
 //general pages
 import SingleBird from "../Pages/SingleBird";
@@ -58,6 +61,21 @@ const Router = createBrowserRouter([
       {
         path: "/bird",
         element: <SingleBird />,
+      },
+
+      {
+        path: "*", 
+        element: <Error404 />,
+      },
+
+      {
+        path: "/forgot-password-page1",
+        element: <ForgotPassword1 />,
+      },
+
+      {
+        path: "/forgot-password-page2",
+        element: <ForgotPassword2 />,
       },
 
       //admin routes

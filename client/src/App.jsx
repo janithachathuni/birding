@@ -10,7 +10,9 @@ function App() {
   const showNavbarPaths = [
     '/', 
     '/login', 
-    '/sign-up'
+    '/sign-up',
+    '/forgot-password-page1',
+    '/forgot-password-page2',
   ];
 
   // Check if current path matches exactly or starts with /admin

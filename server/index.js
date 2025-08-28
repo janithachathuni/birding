@@ -28,6 +28,37 @@ app.post('/register', (req, res) =>{
     })
 })
 
+//api for login
+app.post('/login', async (req, res) =>{
+  const {email, password} = req.body;
+  
+  try {
+    const user = await RegisterModel.findOne({email: email});
+    
+    if(!user) {
+      return res.status(404).json("User not registered");
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if(isMatch){
+      // Return user data including role
+      res.json({
+        message: "Success",
+        user: {
+          id: user._id,
+          email: user.email,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } else {
+      res.status(401).json("Password didn't match");
+    }
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
+
 app.listen(3001, () => {
     console.log("Server started on port 3001");
 })
