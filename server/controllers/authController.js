@@ -5,7 +5,7 @@ exports.register = async (req, res) => {
   try {
     console.log("Register request received:", req.body);
     
-    const { username, email, password } = req.body;
+    const { username, email, password, moderator } = req.body;
     
     // Check if all required fields are present
     if (!username || !email || !password) {
@@ -20,9 +20,16 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
     
-    // Create new user
-    const user = await User.create({ username, email, password });
+    // Create new user with moderator field
+    const user = await User.create({ 
+      username, 
+      email, 
+      password,
+      moderator: moderator || false // Explicitly set moderator field
+    });
+    
     console.log("User created successfully:", user.email);
+    console.log("User moderator status:", user.moderator);
     
     res.status(201).json({ 
       message: "Account created successfully",
@@ -30,7 +37,8 @@ exports.register = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        moderator: user.moderator // Include moderator in response
       }
     });
   } catch (error) {
@@ -64,6 +72,7 @@ exports.login = async (req, res) => {
     }
     
     console.log("Login successful for user:", email);
+    console.log("User moderator status:", user.moderator);
     
     // Return user data
     res.json({
@@ -72,7 +81,8 @@ exports.login = async (req, res) => {
         id: user._id,
         email: user.email,
         username: user.username,
-        role: user.role
+        role: user.role,
+        moderator: user.moderator // Include moderator in response
       }
     });
   } catch (error) {
@@ -80,3 +90,83 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Optional: Add a function to update existing users if needed
+// exports.addModeratorFieldToExistingUsers = async (req, res) => {
+//   try {
+//     // This is a one-time function to add moderator field to existing users
+//     const result = await User.updateMany(
+//       { moderator: { $exists: false } },
+//       { $set: { moderator: false } }
+//     );
+    
+//     console.log(`Updated ${result.modifiedCount} users with moderator field`);
+//     res.json({ 
+//       message: `Added moderator field to ${result.modifiedCount} users`,
+//       modifiedCount: result.modifiedCount
+//     });
+//   } catch (error) {
+//     console.log("Error updating existing users:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+
+//Bird controller
+//add new bird
+// exports.addBird = async (req, res) => {
+//   try {
+//     console.log("Add Bird request received:", req.body);
+    
+//     const {
+//       primaryName,
+//       otherNames,
+//       scientificName,
+//       family,
+//       description,
+//       sinhalaName,
+//       tamilName,
+//       image,
+//       habitatMap,
+//       frequency,
+//       residency,
+//       endemic,
+//       places
+//     } = req.body;
+    
+//     // Check if all required fields are present
+//     if (!primaryName || !scientificName || !family || !description || !image || !frequency || !residency) {
+//       console.log("Missing required fields for bird");
+//       return res.status(400).json({ message: "All required fields must be filled" });
+//     }
+    
+//     // Create new bird
+//     const bird = await Bird.create({
+//       primaryName,
+//       otherNames: otherNames || [],
+//       scientificName,
+//       family,
+//       description,
+//       sinhalaName: sinhalaName || '',
+//       tamilName: tamilName || '',
+//       image,
+//       habitatMap: habitatMap || '',
+//       frequency,
+//       residency,
+//       endemic: endemic || false,
+//       places: places || []
+//     });
+    
+//     console.log("Bird added successfully:", bird.primaryName);
+    
+//     res.status(201).json({ 
+//       message: "Bird added successfully",
+//       bird
+//     });
+//   } catch (error) {
+//     console.log("Error adding bird:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+

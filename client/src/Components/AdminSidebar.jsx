@@ -10,11 +10,19 @@ import {
   FiLogOut,
   FiDatabase
 } from 'react-icons/fi';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 
 const UserSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    //clear all user data from local storage
+    localStorage.removeItem('user');
+    //redirected to login page
+    navigate('/login');
+  }
 
 const navItems = [
   { path: '/admin/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
@@ -61,7 +69,9 @@ const navItems = [
 
       {/* Logout at bottom */}
       <div className="p-4 border-t border-gray-200">
-        <button className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors">
+        <button 
+        onClick={handleLogout}
+        className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142] rounded-lg transition-colors">
           <FiLogOut size={20} className="mr-3" />
           <span className="font-medium">Logout</span>
         </button>

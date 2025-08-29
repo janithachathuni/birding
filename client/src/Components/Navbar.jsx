@@ -1,8 +1,24 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import kurulloIcon from '../assets/kurullo.png';
+import profilepic from '../assets/default_profile_pic.png';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  
+  // Check if user is logged in
+  const user = JSON.parse(localStorage.getItem('user'));
+  const isLoggedIn = !!user;
+
+  // Handle profile click - navigate to appropriate dashboard
+  const handleProfileClick = () => {
+    if (user && user.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/birder/dashboard');
+    }
+  };
+
   return (
     <nav className="bg-white border-b border-black py-3 px-6">
       <div className="container mx-auto flex items-center justify-between">
@@ -13,7 +29,9 @@ const Navbar = () => {
             alt="Kurullo Logo" 
             className="h-10 w-10 mr-2"
           />
-          <span className="text-3xl font-extrabold text-[#506142]"><Link to="/"><h1>Kurullo</h1></Link></span>
+          <span className="text-3xl font-extrabold text-[#506142]">
+            <Link to="/"><h1>Kurullo</h1></Link>
+          </span>
         </div>
 
         {/* Right-aligned items */}
@@ -25,12 +43,29 @@ const Navbar = () => {
             Birdlist
           </Link>
        
-          <Link 
-            to="/login" 
-            className="border border-black bg-[#f8eec8] px-4 py-2  hover:border-black hover:bg-amber-100 transition-colors"
-          >
-            Sign in
-          </Link>
+          {/* Conditional rendering based on login status */}
+          {isLoggedIn ? (
+            // Show profile picture if logged in
+            <button 
+              onClick={handleProfileClick}
+              className="flex items-center justify-center rounded-full border-2 border-black hover:border-amber-900 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+              style={{ width: '40px', height: '40px' }}
+            >
+              <img 
+                src={profilepic} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            </button>
+          ) : (
+            // Show sign in button if not logged in
+            <Link 
+              to="/login" 
+              className="border border-black bg-[#f8eec8] px-4 py-2 hover:border-black hover:bg-amber-100 transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
     </nav>

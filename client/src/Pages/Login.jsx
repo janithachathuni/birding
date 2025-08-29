@@ -20,6 +20,8 @@ const handleSubmit = (e) => {
 
       // Check if the response contains user data with role information
       if (result.data && result.data.user) {
+        //store user data in local storage
+        localStorage.setItem("user", JSON.stringify(result.data.user))
         // Check if user has admin role
         if (result.data.user.role === "admin") {
           navigate("/admin/dashboard");

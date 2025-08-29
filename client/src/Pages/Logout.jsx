@@ -1,6 +1,6 @@
 import React from 'react'
 
-const PrivateRoutes = () => {
+const Logout = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const PrivateRoutes = () => {
   )
 }
 
-export default PrivateRoutes
+export default Logout

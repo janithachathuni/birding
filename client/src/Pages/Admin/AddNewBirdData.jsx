@@ -1,22 +1,33 @@
 import React, { useState } from "react";
 import UserSidebar from "../../Components/AdminSidebar";
 import { FaPlus, FaTimes, FaSave, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AddNewBirdData = () => {
   const [formData, setFormData] = useState({
-    names: [""],
-    sinhala_name: "",
-    tamil_name: "",
-    scientific_name: "",
-    image: "",
-    frequency: "",
-    residency: "",
-    habitat_map: "",
-    endemic: false,
+    primaryName: "", // matches schema
+    otherNames: [""], // array of alternative names
+    scientificName: "",
     family: "",
     description: "",
-    places: [""]
+
+    sinhalaName: "",
+    tamilName: "",
+
+    image: "",
+    habitatMap: "",
+
+    frequency: "", // enum: Very Common, Common, Uncommon, Rare, Very Rare
+    residency: "", // enum: Resident, Migrant, Vagrant
+    endemic: false,
+
+    places: [""], // array of strings
   });
+
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   // All bird families found in Sri Lanka with their categories
   const sriLankanBirdFamilies = [
@@ -69,38 +80,45 @@ const AddNewBirdData = () => {
     { family: "Tytonidae", category: "Barn Owls" },
     { family: "Upupidae", category: "Hoopoes" },
     { family: "Vangidae", category: "Vangas" },
-    { family: "Zosteropidae", category: "White-eyes" }
+    { family: "Zosteropidae", category: "White-eyes" },
   ];
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const handleNameChange = (index, value) => {
-    const newNames = [...formData.names];
+  const handlePrimaryNameChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      primaryName: value,
+    }));
+  };
+
+  const handleOtherNameChange = (index, value) => {
+    const newNames = [...formData.otherNames];
     newNames[index] = value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      names: newNames
+      otherNames: newNames,
     }));
   };
 
-  const addNameField = () => {
-    setFormData(prev => ({
+  const addOtherNameField = () => {
+    setFormData((prev) => ({
       ...prev,
-      names: [...prev.names, ""]
+      otherNames: [...prev.otherNames, ""],
     }));
   };
 
-  const removeNameField = (index) => {
-    if (formData.names.length > 1) {
-      const newNames = formData.names.filter((_, i) => i !== index);
-      setFormData(prev => ({
+  const removeOtherNameField = (index) => {
+    if (formData.otherNames.length > 1) {
+      const newNames = formData.otherNames.filter((_, i) => i !== index);
+      setFormData((prev) => ({
         ...prev,
-        names: newNames
+        otherNames: newNames,
       }));
     }
   };
@@ -108,43 +126,114 @@ const AddNewBirdData = () => {
   const handlePlaceChange = (index, value) => {
     const newPlaces = [...formData.places];
     newPlaces[index] = value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      places: newPlaces
+      places: newPlaces,
     }));
   };
 
   const addPlaceField = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      places: [...prev.places, ""]
+      places: [...prev.places, ""],
     }));
   };
 
   const removePlaceField = (index) => {
     if (formData.places.length > 1) {
       const newPlaces = formData.places.filter((_, i) => i !== index);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        places: newPlaces
+        places: newPlaces,
       }));
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Form Data:", formData);
-    // Handle form submission here
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    // Destructure for easier access
+    const {
+      primaryName,
+      scientificName,
+      family,
+      description,
+      image,
+      frequency,
+      residency,
+    } = formData;
+
+    // Basic validation for required fields
+    if (
+      !primaryName ||
+      !scientificName ||
+      !family ||
+      !description ||
+      !image ||
+      !frequency ||
+      !residency
+    ) {
+      setError("Please fill all required fields (marked with *)");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Filter out empty values from arrays
+    const filteredOtherNames = formData.otherNames.filter(
+      (name) => name.trim() !== ""
+    );
+    const filteredPlaces = formData.places.filter(
+      (place) => place.trim() !== ""
+    );
+
+    // Prepare data for submission
+    const submissionData = {
+      ...formData,
+      otherNames: filteredOtherNames,
+      places: filteredPlaces,
+    };
+
+    axios
+      .post("http://localhost:3001/api/birds/add", submissionData)
+      .then((result) => {
+        console.log(result);
+        if (result.data.message === "Bird added successfully") {
+          navigate("/admin/bird-data");
+        } else {
+          setError(result.data.message || "Failed to add bird");
+        }
+        setIsSubmitting(false);
+      })
+      .catch((err) => {
+        console.log("Full error object:", err);
+        if (err.response) {
+          // Server responded with error status
+          setError(err.response.data.message || "Server error occurred");
+        } else if (err.request) {
+          // Request made but no response
+          setError("No response from server. Check if server is running.");
+        } else {
+          // Something else happened
+          setError("Failed to add bird. Please try again.");
+        }
+        setIsSubmitting(false);
+      });
   };
 
-  const showPlaces = formData.frequency === "rare" || formData.frequency === "very rare";
+  const showPlaces =
+    formData.frequency === "Uncommon" ||
+    formData.frequency === "Rare" ||
+    formData.frequency === "Very Rare";
 
   return (
     <div className="flex min-h-screen bg-white">
       <UserSidebar />
-      <div className="flex pl-8 pb-15 pt-4 pr-20 bg-[#f5f6f5] flex-1  ml-[20%]">
-        <div className="  w-full rounded-lg">
+      <div className="flex pl-8 pb-15 pt-4 pr-20 bg-[#f5f6f5] flex-1 ml-[20%]">
+        <div className="w-full rounded-lg">
           {/* Header */}
-          <div className="flex  items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => window.history.back()}
@@ -153,37 +242,66 @@ const AddNewBirdData = () => {
                 <FaArrowLeft />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-[#253518]">Add New Bird Data</h1>
-                <p className="text-gray-600">Enter information about a new bird species</p>
+                <h1 className="text-2xl font-bold text-[#253518]">
+                  Add New Bird Data
+                </h1>
+                <p className="text-gray-600">
+                  Enter information about a new bird species
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 ">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Names Section */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Bird Names</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Bird Names
+              </h3>
               <div className="space-y-3">
-                {formData.names.map((name, index) => (
+                {/* Primary Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Primary Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.primaryName}
+                    onChange={(e) => handlePrimaryNameChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
+                    required
+                    placeholder="Enter primary bird name"
+                  />
+                </div>
+
+                {/* Other Names */}
+                {formData.otherNames.map((name, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {index === 0 ? "Primary Name *" : `Alternative Name ${index}`}
+                        {`Alternative Name ${index + 1}`}
                       </label>
                       <input
                         type="text"
                         value={name}
-                        onChange={(e) => handleNameChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleOtherNameChange(index, e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
-                        required={index === 0}
-                        placeholder={index === 0 ? "Enter primary bird name" : "Enter alternative name"}
+                        placeholder="Enter alternative name"
                       />
                     </div>
                     {index > 0 && (
                       <button
                         type="button"
-                        onClick={() => removeNameField(index)}
-                        className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-all duration-200"
+                        onClick={() => removeOtherNameField(index)}
+                        className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-all duration-200 mt-5"
                       >
                         <FaTimes />
                       </button>
@@ -192,7 +310,7 @@ const AddNewBirdData = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={addNameField}
+                  onClick={addOtherNameField}
                   className="flex items-center gap-2 px-4 py-2 text-[#506142] border border-[#506142] rounded-lg hover:bg-[#506142] hover:text-white transition-all duration-200"
                 >
                   <FaPlus className="text-sm" /> Add Alternative Name
@@ -202,24 +320,34 @@ const AddNewBirdData = () => {
 
             {/* Local Names */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Local Names</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Local Names
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sinhala Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sinhala Name
+                  </label>
                   <input
                     type="text"
-                    value={formData.sinhala_name}
-                    onChange={(e) => handleInputChange('sinhala_name', e.target.value)}
+                    value={formData.sinhalaName}
+                    onChange={(e) =>
+                      handleInputChange("sinhalaName", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     placeholder="Enter Sinhala name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tamil Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tamil Name
+                  </label>
                   <input
                     type="text"
-                    value={formData.tamil_name}
-                    onChange={(e) => handleInputChange('tamil_name', e.target.value)}
+                    value={formData.tamilName}
+                    onChange={(e) =>
+                      handleInputChange("tamilName", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     placeholder="Enter Tamil name"
                   />
@@ -229,29 +357,39 @@ const AddNewBirdData = () => {
 
             {/* Scientific Classification */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Scientific Classification</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Scientific Classification
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Scientific Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Scientific Name *
+                  </label>
                   <input
                     type="text"
-                    value={formData.scientific_name}
-                    onChange={(e) => handleInputChange('scientific_name', e.target.value)}
+                    value={formData.scientificName}
+                    onChange={(e) =>
+                      handleInputChange("scientificName", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     required
                     placeholder="Enter scientific name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Family *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Family *
+                  </label>
                   <select
                     value={formData.family}
-                    onChange={(e) => handleInputChange('family', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("family", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     required
                   >
                     <option value="">Select Family</option>
-                    {sriLankanBirdFamilies.map(familyObj => (
+                    {sriLankanBirdFamilies.map((familyObj) => (
                       <option key={familyObj.family} value={familyObj.family}>
                         {familyObj.family}: {familyObj.category}
                       </option>
@@ -263,25 +401,33 @@ const AddNewBirdData = () => {
 
             {/* Images */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Images</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Images
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bird Image URL *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bird Image URL *
+                  </label>
                   <input
                     type="url"
                     value={formData.image}
-                    onChange={(e) => handleInputChange('image', e.target.value)}
+                    onChange={(e) => handleInputChange("image", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     required
                     placeholder="Enter image URL"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Habitat Map URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Habitat Map URL
+                  </label>
                   <input
                     type="url"
-                    value={formData.habitat_map}
-                    onChange={(e) => handleInputChange('habitat_map', e.target.value)}
+                    value={formData.habitatMap}
+                    onChange={(e) =>
+                      handleInputChange("habitatMap", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     placeholder="Enter habitat map URL"
                   />
@@ -291,36 +437,46 @@ const AddNewBirdData = () => {
 
             {/* Status Information */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Status Information</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Status Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Frequency *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Frequency *
+                  </label>
                   <select
                     value={formData.frequency}
-                    onChange={(e) => handleInputChange('frequency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("frequency", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     required
                   >
                     <option value="">Select Frequency</option>
-                    <option value="very common">Very Common</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                    <option value="very rare">Very Rare</option>
+                    <option value="Very Common">Very Common</option>
+                    <option value="Common">Common</option>
+                    <option value="Uncommon">Uncommon</option>
+                    <option value="Rare">Rare</option>
+                    <option value="Very Rare">Very Rare</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Residency *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Residency *
+                  </label>
                   <select
                     value={formData.residency}
-                    onChange={(e) => handleInputChange('residency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("residency", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                     required
                   >
                     <option value="">Select Residency</option>
-                    <option value="resident">Resident</option>
-                    <option value="migrant">Migrant</option>
-                    <option value="vagrant">Vagrant</option>
+                    <option value="Resident">Resident</option>
+                    <option value="Migrant">Migrant</option>
+                    <option value="Vagrant">Vagrant</option>
                   </select>
                 </div>
                 <div>
@@ -328,7 +484,9 @@ const AddNewBirdData = () => {
                     <input
                       type="checkbox"
                       checked={formData.endemic}
-                      onChange={(e) => handleInputChange('endemic', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("endemic", e.target.checked)
+                      }
                       className="rounded border-gray-300 text-[#506142] focus:ring-[#506142]"
                     />
                     Endemic to Sri Lanka
@@ -339,21 +497,30 @@ const AddNewBirdData = () => {
 
             {/* Description */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Description</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Description
+              </h3>
               <textarea
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                 placeholder="Enter detailed description of the bird..."
+                required
               />
             </div>
 
             {/* Places (only show if rare/very rare) */}
             {showPlaces && (
               <div className="bg-white rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Known Locations</h3>
-                <p className="text-sm text-gray-600 mb-4">List places where this rare bird has been frequently observed</p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Known Locations
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  List places where this rare bird has been frequently observed
+                </p>
                 <div className="space-y-3">
                   {formData.places.map((place, index) => (
                     <div key={index} className="flex items-center gap-3">
@@ -361,7 +528,9 @@ const AddNewBirdData = () => {
                         <input
                           type="text"
                           value={place}
-                          onChange={(e) => handlePlaceChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handlePlaceChange(index, e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent"
                           placeholder={`Enter location ${index + 1}`}
                         />
@@ -398,14 +567,17 @@ const AddNewBirdData = () => {
                 Cancel
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
-                className="flex items-center gap-2 px-6 py-3 bg-[#506142] text-white rounded-lg hover:bg-[#3f4d34] transition-all font-medium"
+                type="submit"
+                disabled={isSubmitting}
+                className={`flex items-center gap-2 px-6 py-3 bg-[#506142] text-white rounded-lg hover:bg-[#3f4d34] transition-all font-medium ${
+                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
               >
-                <FaSave className="text-sm" /> Save Bird Data
+                <FaSave className="text-sm" />
+                {isSubmitting ? "Saving..." : "Save Bird Data"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

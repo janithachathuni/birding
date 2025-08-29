@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserSidebar from "../../Components/AdminSidebar";
+import { useNavigate } from "react-router-dom";
 import { Users, Camera, MessageSquare, Bird, Flag, TrendingUp, Eye, UserCheck, UserX, Settings, Database, AlertTriangle } from "lucide-react";
 
 // Mock UserSidebar component (replace with your actual import)
@@ -7,6 +8,28 @@ import { Users, Camera, MessageSquare, Bird, Flag, TrendingUp, Eye, UserCheck, U
 
 const Dashboard = () => {
   const [selectedSection, setSelectedSection] = useState('overview');
+
+
+//authorization check
+const navigate = useNavigate();
+  
+  // useEffect(() => {
+  //   const user = JSON.parse(localStorage.getItem('user'));
+    
+  //   if (!user) {
+  //     navigate('/login');
+  //     return;
+  //   }
+    
+  //   if (user.role !== 'admin') {
+  //     navigate('/unauthorized');
+  //     return;
+  //   }
+  // }, [navigate]);
+
+
+
+
 
   // Mock data
   const stats = {
@@ -78,6 +101,8 @@ const Dashboard = () => {
       </div>
     );
   };
+
+  
 
   return (
     <div className="flex min-h-screen bg-white">

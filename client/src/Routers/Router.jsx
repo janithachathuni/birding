@@ -37,6 +37,7 @@ import BirderSettings from "../Pages/Birder/Settings";
 import BirderTrips from "../Pages/Birder/Trips";
 import BirderNotifications from "../Pages/Birder/Notifications";
 import BirderDiscussion from "../Pages/Birder/Discussion";
+import ProtectedRoute from "../Components/ProtectedRoute";
 
 const Router = createBrowserRouter([
   {
@@ -84,52 +85,93 @@ const Router = createBrowserRouter([
         children: [
           {
             path: "content-moderation",
-            element: <AdminContentModeration />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminContentModeration/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "manage-moderators",
-            element: <AdminModeratorManagement />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminModeratorManagement/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "settings",
-            element: <AdminSettings />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminSettings/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "dashboard",
-            element: <AdminDashboard />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "statistics",
-            element: <AdminStatistics />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminStatistics/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "advertisements",
-            element: <AdminAdvertisements />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminAdvertisements/>
+              </ProtectedRoute>
+            )
           },
 
+          //make notifications page!!!
           {
             path: "notifications",
-            element: <AdminAdvertisements />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminContentModeration/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "bird-data",
-            element: <AdminBirdData />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminBirdData/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "edit-bird",
-            element: <AdminEditBirdData />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminEditBirdData/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "add-bird",
-            element: <AdminAddNewBirdData />,
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminAddNewBirdData/>
+              </ProtectedRoute>
+            )
           }
         ],
       },
@@ -140,48 +182,77 @@ const Router = createBrowserRouter([
         children: [
           {
             path: "dashboard",
-            element: <BirderDashboard />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderDashboard/>
+              </ProtectedRoute>
+            )
           },
 
-          {
-            path: "blog",
-            element: <BirderBlog />,
-          },
+          
 
           {
             path: "checklists",
-            element: <BirderChecklists />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderChecklists/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "trips",
-            element: <BirderTrips />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderTrips/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "forum",
-            element: <BirderForum />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderForum/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "settings",
-            element: <BirderSettings />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderSettings/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "blog",
-            element: <BirderBlog />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderBlog/>
+              </ProtectedRoute>
+            )
           },
 
           {
             path: "notifications",
-            element: <BirderNotifications />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderNotifications/>
+              </ProtectedRoute>
+            )
           },
 
           // discussion/:id
           {
             path: "discussion",
-            element: <BirderDiscussion />,
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderDiscussion/>
+              </ProtectedRoute>
+            )
           }
         ],
       },
