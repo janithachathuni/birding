@@ -1,129 +1,224 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import AdminSidebar from "../../Components/AdminSidebar";
 import { FaEdit, FaTrash, FaPlus, FaSearch } from "react-icons/fa";
+import axios from "axios";
 
 const BirdData = () => {
-  // Enhanced bird data with families
-  const initialBirds = [
-    {
-      id: 1,
-      name: ["Sri Lanka Junglefowl", "Ceylon Junglefowl"],
-      scientific_name: "Gallus lafayettii",
-      family: "Phasianidae",
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Flickr_-_Rainbirder_-_Ceylon_Junglefowl_%28Gallus_lafayetii%29_Male.jpg/500px-Flickr_-_Rainbirder_-_Ceylon_Junglefowl_%28Gallus_lafayetii%29_Male.jpg",
-    },
-    {
-      id: 2,
-      name: ["Crimson-fronted Barbet", "Ceylon Small Barbet"],
-      scientific_name: "Psilopogon rubricapillus",
-      family: "Megalaimidae",
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/1/1e/Ceylon_Small_Barbet_MSW.jpg",
-    },
-    {
-      id: 3,
-      name: ["Serendib Scops Owl"],
-      scientific_name: "Otus thilohoffmanni",
-      family: "Strigidae",
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Serendib_Scops-owl.jpg/375px-Serendib_Scops-owl.jpg",
-    },
-    {
-      id: 4,
-      name: ["Sri Lanka Blue Magpie", "Ceylon Blue Magpie"],
-      scientific_name: "Urocissa ornata",
-      family: "Corvidae",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop",
-    },
-    {
-      id: 5,
-      name: ["Sri Lanka White-eye", "Ceylon White-eye"],
-      scientific_name: "Zosterops ceylonensis",
-      family: "Zosteropidae",
-      image: "https://images.unsplash.com/photo-1597149604924-d8f84c804f15?w=400&h=400&fit=crop",
-    },
-    {
-      id: 6,
-      name: ["Sri Lanka Spurfowl", "Ceylon Spurfowl"],
-      scientific_name: "Galloperdix bicalcarata",
-      family: "Phasianidae",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop",
-    }
-  ];
-
-  // All bird families found in Sri Lanka with their categories
-  const sriLankanBirdFamilies = [
-    { family: "Accipitridae", category: "Birds of Prey" },
-    { family: "Aegithalidae", category: "Long-tailed Tits" },
-    { family: "Alaudidae", category: "Larks" },
-    { family: "Alcedinidae", category: "Kingfishers" },
-    { family: "Anatidae", category: "Ducks, Geese & Swans" },
-    { family: "Apodidae", category: "Swifts" },
-    { family: "Ardeidae", category: "Herons & Egrets" },
-    { family: "Bucerotidae", category: "Hornbills" },
-    { family: "Campephagidae", category: "Cuckoo-shrikes" },
-    { family: "Caprimulgidae", category: "Nightjars" },
-    { family: "Charadriidae", category: "Plovers" },
-    { family: "Ciconiidae", category: "Storks" },
-    { family: "Cisticolidae", category: "Cisticolas & Allies" },
-    { family: "Columbidae", category: "Pigeons & Doves" },
-    { family: "Coraciidae", category: "Rollers" },
-    { family: "Corvidae", category: "Crows, Jays & Magpies" },
-    { family: "Cuculidae", category: "Cuckoos" },
-    { family: "Dicaeidae", category: "Flowerpeckers" },
-    { family: "Dicruridae", category: "Drongos" },
-    { family: "Estrildidae", category: "Estrildid Finches" },
-    { family: "Falconidae", category: "Falcons & Caracaras" },
-    { family: "Fringillidae", category: "Finches & Canaries" },
-    { family: "Hirundinidae", category: "Swallows & Martins" },
-    { family: "Laniidae", category: "Shrikes" },
-    { family: "Laridae", category: "Gulls, Terns & Skimmers" },
-    { family: "Megalaimidae", category: "Asian Barbets" },
-    { family: "Meropidae", category: "Bee-eaters" },
-    { family: "Motacillidae", category: "Wagtails & Pipits" },
-    { family: "Muscicapidae", category: "Old World Flycatchers" },
-    { family: "Nectariniidae", category: "Sunbirds" },
-    { family: "Oriolidae", category: "Orioles" },
-    { family: "Pelecandiae", category: "Pelicans" },
-    { family: "Phasianidae", category: "Pheasants & Allies" },
-    { family: "Picidae", category: "Woodpeckers" },
-    { family: "Pittidae", category: "Pittas" },
-    { family: "Ploceidae", category: "Weavers" },
-    { family: "Psittacidae", category: "Parrots" },
-    { family: "Pycnonotidae", category: "Bulbuls" },
-    { family: "Rallidae", category: "Rails, Crakes & Coots" },
-    { family: "Scolopacidae", category: "Sandpipers & Allies" },
-    { family: "Strigidae", category: "Owls" },
-    { family: "Sturnidae", category: "Starlings" },
-    { family: "Sylviidae", category: "Sylviid Warblers" },
-    { family: "Threskiornithidae", category: "Ibises & Spoonbills" },
-    { family: "Timaliidae", category: "Babblers" },
-    { family: "Turdidae", category: "Thrushes" },
-    { family: "Tytonidae", category: "Barn Owls" },
-    { family: "Upupidae", category: "Hoopoes" },
-    { family: "Vangidae", category: "Vangas" },
-    { family: "Zosteropidae", category: "White-eyes" }
-  ];
-
-  const [birds] = useState(initialBirds);
+  const [birds, setBirds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedBird, setSelectedBird] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFamily, setSelectedFamily] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState("");
 
-  // Filter birds based on search term and family
+  // All bird families and their orders found in Sri Lanka
+  const sriLankanBirdTaxonomy = [
+    {
+      order: "Accipitriformes",
+      family: "Accipitridae",
+      category: "Birds of Prey",
+    },
+    {
+      order: "Passeriformes",
+      family: "Aegithalidae",
+      category: "Long-tailed Tits",
+    },
+    { order: "Passeriformes", family: "Alaudidae", category: "Larks" },
+    { order: "Coraciiformes", family: "Alcedinidae", category: "Kingfishers" },
+    {
+      order: "Anseriformes",
+      family: "Anatidae",
+      category: "Ducks, Geese & Swans",
+    },
+    { order: "Apodiformes", family: "Apodidae", category: "Swifts" },
+    {
+      order: "Pelecaniformes",
+      family: "Ardeidae",
+      category: "Herons & Egrets",
+    },
+    { order: "Bucerotiformes", family: "Bucerotidae", category: "Hornbills" },
+    {
+      order: "Passeriformes",
+      family: "Campephagidae",
+      category: "Cuckoo-shrikes",
+    },
+    {
+      order: "Caprimulgiformes",
+      family: "Caprimulgidae",
+      category: "Nightjars",
+    },
+    { order: "Charadriiformes", family: "Charadriidae", category: "Plovers" },
+    { order: "Ciconiiformes", family: "Ciconiidae", category: "Storks" },
+    {
+      order: "Passeriformes",
+      family: "Cisticolidae",
+      category: "Cisticolas & Allies",
+    },
+    {
+      order: "Columbiformes",
+      family: "Columbidae",
+      category: "Pigeons & Doves",
+    },
+    { order: "Coraciiformes", family: "Coraciidae", category: "Rollers" },
+    {
+      order: "Passeriformes",
+      family: "Corvidae",
+      category: "Crows, Jays & Magpies",
+    },
+    { order: "Cuculiformes", family: "Cuculidae", category: "Cuckoos" },
+    { order: "Passeriformes", family: "Dicaeidae", category: "Flowerpeckers" },
+    { order: "Passeriformes", family: "Dicruridae", category: "Drongos" },
+    {
+      order: "Passeriformes",
+      family: "Estrildidae",
+      category: "Estrildid Finches",
+    },
+    {
+      order: "Falconiformes",
+      family: "Falconidae",
+      category: "Falcons & Caracaras",
+    },
+    {
+      order: "Passeriformes",
+      family: "Fringillidae",
+      category: "Finches & Canaries",
+    },
+    {
+      order: "Passeriformes",
+      family: "Hirundinidae",
+      category: "Swallows & Martins",
+    },
+    { order: "Passeriformes", family: "Laniidae", category: "Shrikes" },
+    {
+      order: "Charadriiformes",
+      family: "Laridae",
+      category: "Gulls, Terns & Skimmers",
+    },
+    { order: "Piciformes", family: "Megalaimidae", category: "Asian Barbets" },
+    { order: "Coraciiformes", family: "Meropidae", category: "Bee-eaters" },
+    {
+      order: "Passeriformes",
+      family: "Motacillidae",
+      category: "Wagtails & Pipits",
+    },
+    {
+      order: "Passeriformes",
+      family: "Muscicapidae",
+      category: "Old World Flycatchers",
+    },
+    { order: "Passeriformes", family: "Nectariniidae", category: "Sunbirds" },
+    { order: "Passeriformes", family: "Oriolidae", category: "Orioles" },
+    { order: "Pelecaniformes", family: "Pelecandiae", category: "Pelicans" },
+    {
+      order: "Galliformes",
+      family: "Phasianidae",
+      category: "Pheasants & Allies",
+    },
+    { order: "Piciformes", family: "Picidae", category: "Woodpeckers" },
+    { order: "Passeriformes", family: "Pittidae", category: "Pittas" },
+    { order: "Passeriformes", family: "Ploceidae", category: "Weavers" },
+    { order: "Psittaciformes", family: "Psittacidae", category: "Parrots" },
+    { order: "Passeriformes", family: "Pycnonotidae", category: "Bulbuls" },
+    {
+      order: "Gruiformes",
+      family: "Rallidae",
+      category: "Rails, Crakes & Coots",
+    },
+    {
+      order: "Charadriiformes",
+      family: "Scolopacidae",
+      category: "Sandpipers & Allies",
+    },
+    { order: "Strigiformes", family: "Strigidae", category: "Owls" },
+    { order: "Passeriformes", family: "Sturnidae", category: "Starlings" },
+    {
+      order: "Passeriformes",
+      family: "Sylviidae",
+      category: "Sylviid Warblers",
+    },
+    {
+      order: "Pelecaniformes",
+      family: "Threskiornithidae",
+      category: "Ibises & Spoonbills",
+    },
+    { order: "Passeriformes", family: "Timaliidae", category: "Babblers" },
+    { order: "Passeriformes", family: "Turdidae", category: "Thrushes" },
+    { order: "Strigiformes", family: "Tytonidae", category: "Barn Owls" },
+    { order: "Bucerotiformes", family: "Upupidae", category: "Hoopoes" },
+    { order: "Passeriformes", family: "Vangidae", category: "Vangas" },
+    { order: "Passeriformes", family: "Zosteropidae", category: "White-eyes" },
+  ];
+
+  // Extract unique orders from the taxonomy data
+  const birdOrders = useMemo(() => {
+    const orders = new Set(sriLankanBirdTaxonomy.map((item) => item.order));
+    return [...orders].sort();
+  }, []);
+
+  // Fetch data from the backend on component mount
+  useEffect(() => {
+    const fetchBirds = async () => {
+      try {
+        // Updated to a plausible API endpoint
+        const response = await axios.get("http://localhost:3001/api/birds/get");
+
+        // Ensure the data is an array before setting state
+        if (Array.isArray(response.data)) {
+          setBirds(response.data);
+        } else if (
+          response.data &&
+          response.data.data &&
+          Array.isArray(response.data.data)
+        ) {
+          // Handles a common API response structure like { success: true, data: [...] }
+          setBirds(response.data.data);
+        } else {
+          setBirds([]);
+          console.error("API response is not an array:", response.data);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching bird data:", err);
+        setError(
+          "Failed to fetch bird data. Please check if the backend server is running."
+        );
+        setLoading(false);
+      }
+    };
+    fetchBirds();
+
+
+    // const deleteBird = async()=>{
+    //   try{
+    //     const response = await axios.delete(`http://localhost:3001/api/birds/delete/${selectedBird._id}`);
+    //     console.log("Delete response:", response.data);
+    //   }
+    // }
+  }, []);
+
+  // Filter birds based on search term, family, and order
   const filteredBirds = useMemo(() => {
-    return birds.filter(bird => {
-      const matchesSearch = searchTerm === "" || 
-        bird.name.some(name => name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        bird.scientific_name.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesFamily = selectedFamily === "" || bird.family === selectedFamily;
-      
-      return matchesSearch && matchesFamily;
+    return birds.filter((bird) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        (bird.primaryName &&
+          bird.primaryName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (bird.scientificName &&
+          bird.scientificName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesFamily =
+        selectedFamily === "" ||
+        (bird.family && bird.family === selectedFamily);
+
+      const matchesOrder =
+        selectedOrder === "" || (bird.order && bird.order === selectedOrder);
+
+      return matchesSearch && matchesFamily && matchesOrder;
     });
-  }, [birds, searchTerm, selectedFamily]);
+  }, [birds, searchTerm, selectedFamily, selectedOrder]);
 
   const handleDeleteClick = (bird) => {
     setSelectedBird(bird);
@@ -138,6 +233,7 @@ const BirdData = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedFamily("");
+    setSelectedOrder("");
   };
 
   return (
@@ -154,7 +250,9 @@ const BirdData = () => {
               <h1 className="text-2xl font-bold text-[#314124] mb-2">
                 Bird Data Management
               </h1>
-              <p className="text-gray-600">Manage Sri Lankan bird species data</p>
+              <p className="text-gray-600">
+                Manage Sri Lankan bird species data
+              </p>
             </div>
             <button
               onClick={() => (window.location.href = "/admin/add-bird")}
@@ -180,6 +278,22 @@ const BirdData = () => {
               />
             </div>
 
+            {/* Order Filter */}
+            <div className="w-60">
+              <select
+                value={selectedOrder}
+                onChange={(e) => setSelectedOrder(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent bg-white"
+              >
+                <option value="">All Orders</option>
+                {birdOrders.map((order) => (
+                  <option key={order} value={order}>
+                    {order}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Family Filter */}
             <div className="w-80">
               <select
@@ -188,7 +302,7 @@ const BirdData = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#506142] focus:border-transparent bg-white"
               >
                 <option value="">All Families</option>
-                {sriLankanBirdFamilies.map(familyObj => (
+                {sriLankanBirdTaxonomy.map((familyObj) => (
                   <option key={familyObj.family} value={familyObj.family}>
                     {familyObj.family}: {familyObj.category}
                   </option>
@@ -197,7 +311,7 @@ const BirdData = () => {
             </div>
 
             {/* Clear Filters Button */}
-            {(searchTerm || selectedFamily) && (
+            {(searchTerm || selectedFamily || selectedOrder) && (
               <button
                 onClick={clearFilters}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-all"
@@ -210,7 +324,7 @@ const BirdData = () => {
           {/* Results Summary */}
           <div className="text-sm text-gray-600">
             Showing {filteredBirds.length} of {birds.length} birds
-            {(searchTerm || selectedFamily) && (
+            {(searchTerm || selectedFamily || selectedOrder) && (
               <span className="ml-2 text-[#506142] font-medium">
                 (filtered)
               </span>
@@ -220,85 +334,121 @@ const BirdData = () => {
 
         {/* Bird Table */}
         <div className="bg-[#f5f6f5] rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-[#506142] text-white">
-                <th className="px-6 py-4 text-left font-semibold">Image</th>
-                <th className="px-6 py-4 text-left font-semibold">Name</th>
-                <th className="px-6 py-4 text-left font-semibold">Scientific Name</th>
-                <th className="px-6 py-4 text-left font-semibold">Family</th>
-                <th className="px-6 py-4 text-center font-semibold w-24">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredBirds.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-12 text-gray-500">
-                    <div className="flex flex-col items-center">
-                      <div className="text-gray-400 mb-4">
-                        <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <h3 className="font-semibold text-gray-600 mb-1">No birds found</h3>
-                      <p className="text-sm text-gray-500">Try adjusting your search or filter criteria</p>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>Loading bird data...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#506142] text-white">
+                  <th className="px-6 py-4 text-left font-semibold">Image</th>
+                  <th className="px-6 py-4 text-left font-semibold">Name</th>
+                  <th className="px-6 py-4 text-left font-semibold">
+                    Scientific Name
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold">Order</th>
+                  <th className="px-6 py-4 text-left font-semibold">Family</th>
+                  <th className="px-6 py-4 text-center font-semibold w-24">
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                filteredBirds.map((bird, index) => (
-                  <tr
-                    key={bird.id}
-                    className={`border-b border-gray-200 hover:bg-[#e8e9e8] transition-colors ${
-                      index % 2 === 0 ? 'bg-white' : 'bg-[#f5f6f5]'
-                    }`}
-                  >
-                    <td className="px-6 py-4">
-                      <img
-                        src={bird.image}
-                        alt={bird.name[0]}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold text-gray-800">{bird.name[0]}</p>
-                        {bird.name.length > 1 && (
-                          <p className="text-sm text-gray-500 mt-1">
-                            Also known as: {bird.name.slice(1).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="italic text-gray-700">{bird.scientific_name}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-gray-700">{bird.family}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => (window.location.href = "/admin/edit-bird")}
-                          className="p-2 text-[#506142] hover:bg-[#506142] hover:text-white rounded-lg transition-all duration-200"
-                          title="Edit Bird"
-                        >
-                          <FaEdit className="text-lg" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(bird)}
-                          className="p-2 text-[#506142] hover:bg-[#506142] hover:text-white rounded-lg transition-all duration-200"
-                          title="Delete Bird"
-                        >
-                          <FaTrash className="text-lg" />
-                        </button>
+              </thead>
+              <tbody>
+                {filteredBirds.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center py-12 text-gray-500">
+                      <div className="flex flex-col items-center">
+                        <div className="text-gray-400 mb-4">
+                          <svg
+                            className="w-12 h-12 mx-auto"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <h3 className="font-semibold text-gray-600 mb-1">
+                          No birds found
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Try adjusting your search or filter criteria
+                        </p>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filteredBirds.map((bird, index) => (
+                    <tr
+                      key={bird._id} // Use MongoDB's _id as the unique key
+                      className={`border-b border-gray-200 hover:bg-[#e8e9e8] transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-[#f5f6f5]"
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <img
+                          src={bird.image}
+                          alt={bird.primaryName}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {bird.primaryName}
+                          </p>
+                          {bird.otherNames && bird.otherNames.length > 0 && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              Also known as: {bird.otherNames.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="italic text-gray-700">
+                          {bird.scientificName}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-gray-700">{bird.order}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-gray-700">{bird.family}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() =>
+                              (window.location.href = `/admin/edit-bird/${bird._id}`)
+                            }
+                            className="p-2 text-[#506142] hover:bg-[#506142] hover:text-white rounded-lg transition-all duration-200"
+                            title="Edit Bird"
+                          >
+                            <FaEdit className="text-lg" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(bird)}
+                            className="p-2 text-[#506142] hover:bg-[#506142] hover:text-white rounded-lg transition-all duration-200"
+                            title="Delete Bird"
+                          >
+                            <FaTrash className="text-lg" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -310,12 +460,19 @@ const BirdData = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
                 <FaTrash className="text-red-500 text-xl" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Confirm Deletion</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                Confirm Deletion
+              </h3>
               <p className="text-gray-600">
                 Are you sure you want to delete{" "}
-                <strong className="text-gray-800">{selectedBird?.name[0]}</strong>?
+                <strong className="text-gray-800">
+                  {selectedBird?.primaryName}
+                </strong>
+                ?
               </p>
-              <p className="text-sm text-gray-500 mt-1">This action cannot be undone.</p>
+              <p className="text-sm text-gray-500 mt-1">
+                This action cannot be undone.
+              </p>
             </div>
             <div className="flex gap-3">
               <button

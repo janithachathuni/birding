@@ -6,6 +6,7 @@ const BirdSchema = new mongoose.Schema({
     otherNames: { type: [String], default: [] }, // Array of alternative names
     
     scientificName: { type: String, required: true },
+    order: { type: String, required: true },
     family: { type: String, required: true },
     description: { type: String, required: true },
     

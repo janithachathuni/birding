@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+
+//route imports
 const authRoutes = require('./routes/authRoutes');
 const birdRoutes = require('./routes/birdRoutes');
 

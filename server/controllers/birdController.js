@@ -1,9 +1,5 @@
 const Bird = require('../models/Bird');
 
-// Remove these lines - they're causing the error:
-// console.log("API endpoint /api/birds/add called");
-// console.log("Request body:", req.body);
-
 exports.addBird = async (req, res) => {
     try {
         console.log("Add Bird request received:", req.body); // Keep this line inside the function
@@ -12,6 +8,7 @@ exports.addBird = async (req, res) => {
             primaryName,
             otherNames,
             scientificName,
+            order,
             family,
             description,
             sinhalaName,
@@ -24,7 +21,7 @@ exports.addBird = async (req, res) => {
             places
         } = req.body;
 
-        if (!primaryName || !scientificName || !family || !description || !image || !frequency || !residency) {
+        if (!primaryName || !scientificName || !order || !family || !description || !image || !frequency || !residency) {
             console.log("Missing required fields for bird");
             return res.status(400).json({ message: "All required fields must be filled" });
         }
@@ -33,6 +30,7 @@ exports.addBird = async (req, res) => {
             primaryName,
             otherNames: otherNames || [],
             scientificName,
+            order,
             family,
             description,
             sinhalaName: sinhalaName || '',
@@ -69,3 +67,27 @@ exports.addBird = async (req, res) => {
         res.status(500).json({ message: "Failed to add bird. Please try again." });
     }
 };
+
+//get all birds controller
+exports.getAllBirds = async(req,res)=>{
+    try{
+        const birds = await Bird.find(); //fetching all docs in bird collection
+        res.status(200).json(birds) //sends the array of birds as a jason respons
+    }catch(error){
+        res.status(500).json({message:"Error fetching birds"})
+    }
+}
+
+// //delete bird controller 
+exports.deleteBird = async(req, res) =>{
+    try{
+        const {id} = req.params;
+        const deletedBird = await Bird.findByIdAndDelete(id);
+        if(!deletedBird){
+            return res.status(404).json({message:"Bird not found"})
+        }
+        res.status(200).json({message:"Bird deleted successfully"}) 
+    }catch(error){
+        res.status(500).json({message:"Error deleting bird"})
+    }
+}

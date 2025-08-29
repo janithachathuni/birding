@@ -12,6 +12,8 @@ import ForgotPassword2 from "../Pages/ForgotPassword2";
 
 //general pages
 import SingleBird from "../Pages/SingleBird";
+import AllBirds from "../Pages/AllBirds";
+import Family from "../Pages/Family";
 
 //admin
 import AdminDashboard from "../Pages/Admin/Dashboard";
@@ -59,11 +61,23 @@ const Router = createBrowserRouter([
         element: <SignUp />,
       },
 
+      //public bird data pages
       {
         path: "/bird",
         element: <SingleBird />,
       },
 
+      {
+        path: "/all-birds",
+        element: <AllBirds />,
+      },
+
+      {
+        path: "/family/:familyName",
+        element: <Family />,
+      },
+
+      //unauthorized, error 404s, forgot password pages
       {
         path: "*", 
         element: <Error404 />,
