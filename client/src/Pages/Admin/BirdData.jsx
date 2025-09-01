@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AdminSidebar from "../../Components/AdminSidebar";
-import { FaEdit, FaTrash, FaPlus, FaSearch } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const BirdData = () => {
   const [birds, setBirds] = useState([]);
@@ -12,137 +13,57 @@ const BirdData = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFamily, setSelectedFamily] = useState("");
   const [selectedOrder, setSelectedOrder] = useState("");
+  const [notification, setNotification] = useState(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // All bird families and their orders found in Sri Lanka
   const sriLankanBirdTaxonomy = [
-    {
-      order: "Accipitriformes",
-      family: "Accipitridae",
-      category: "Birds of Prey",
-    },
-    {
-      order: "Passeriformes",
-      family: "Aegithalidae",
-      category: "Long-tailed Tits",
-    },
+    { order: "Accipitriformes", family: "Accipitridae", category: "Birds of Prey" },
+    { order: "Passeriformes", family: "Aegithalidae", category: "Long-tailed Tits" },
     { order: "Passeriformes", family: "Alaudidae", category: "Larks" },
     { order: "Coraciiformes", family: "Alcedinidae", category: "Kingfishers" },
-    {
-      order: "Anseriformes",
-      family: "Anatidae",
-      category: "Ducks, Geese & Swans",
-    },
+    { order: "Anseriformes", family: "Anatidae", category: "Ducks, Geese & Swans" },
     { order: "Apodiformes", family: "Apodidae", category: "Swifts" },
-    {
-      order: "Pelecaniformes",
-      family: "Ardeidae",
-      category: "Herons & Egrets",
-    },
+    { order: "Pelecaniformes", family: "Ardeidae", category: "Herons & Egrets" },
     { order: "Bucerotiformes", family: "Bucerotidae", category: "Hornbills" },
-    {
-      order: "Passeriformes",
-      family: "Campephagidae",
-      category: "Cuckoo-shrikes",
-    },
-    {
-      order: "Caprimulgiformes",
-      family: "Caprimulgidae",
-      category: "Nightjars",
-    },
+    { order: "Passeriformes", family: "Campephagidae", category: "Cuckoo-shrikes" },
+    { order: "Caprimulgiformes", family: "Caprimulgidae", category: "Nightjars" },
     { order: "Charadriiformes", family: "Charadriidae", category: "Plovers" },
     { order: "Ciconiiformes", family: "Ciconiidae", category: "Storks" },
-    {
-      order: "Passeriformes",
-      family: "Cisticolidae",
-      category: "Cisticolas & Allies",
-    },
-    {
-      order: "Columbiformes",
-      family: "Columbidae",
-      category: "Pigeons & Doves",
-    },
+    { order: "Passeriformes", family: "Cisticolidae", category: "Cisticolas & Allies" },
+    { order: "Columbiformes", family: "Columbidae", category: "Pigeons & Doves" },
     { order: "Coraciiformes", family: "Coraciidae", category: "Rollers" },
-    {
-      order: "Passeriformes",
-      family: "Corvidae",
-      category: "Crows, Jays & Magpies",
-    },
+    { order: "Passeriformes", family: "Corvidae", category: "Crows, Jays & Magpies" },
     { order: "Cuculiformes", family: "Cuculidae", category: "Cuckoos" },
     { order: "Passeriformes", family: "Dicaeidae", category: "Flowerpeckers" },
     { order: "Passeriformes", family: "Dicruridae", category: "Drongos" },
-    {
-      order: "Passeriformes",
-      family: "Estrildidae",
-      category: "Estrildid Finches",
-    },
-    {
-      order: "Falconiformes",
-      family: "Falconidae",
-      category: "Falcons & Caracaras",
-    },
-    {
-      order: "Passeriformes",
-      family: "Fringillidae",
-      category: "Finches & Canaries",
-    },
-    {
-      order: "Passeriformes",
-      family: "Hirundinidae",
-      category: "Swallows & Martins",
-    },
+    { order: "Passeriformes", family: "Estrildidae", category: "Estrildid Finches" },
+    { order: "Falconiformes", family: "Falconidae", category: "Falcons & Caracaras" },
+    { order: "Passeriformes", family: "Fringillidae", category: "Finches & Canaries" },
+    { order: "Passeriformes", family: "Hirundinidae", category: "Swallows & Martins" },
     { order: "Passeriformes", family: "Laniidae", category: "Shrikes" },
-    {
-      order: "Charadriiformes",
-      family: "Laridae",
-      category: "Gulls, Terns & Skimmers",
-    },
+    { order: "Charadriiformes", family: "Laridae", category: "Gulls, Terns & Skimmers" },
     { order: "Piciformes", family: "Megalaimidae", category: "Asian Barbets" },
     { order: "Coraciiformes", family: "Meropidae", category: "Bee-eaters" },
-    {
-      order: "Passeriformes",
-      family: "Motacillidae",
-      category: "Wagtails & Pipits",
-    },
-    {
-      order: "Passeriformes",
-      family: "Muscicapidae",
-      category: "Old World Flycatchers",
-    },
+    { order: "Passeriformes", family: "Motacillidae", category: "Wagtails & Pipits" },
+    { order: "Passeriformes", family: "Muscicapidae", category: "Old World Flycatchers" },
     { order: "Passeriformes", family: "Nectariniidae", category: "Sunbirds" },
     { order: "Passeriformes", family: "Oriolidae", category: "Orioles" },
-    { order: "Pelecaniformes", family: "Pelecandiae", category: "Pelicans" },
-    {
-      order: "Galliformes",
-      family: "Phasianidae",
-      category: "Pheasants & Allies",
-    },
+    { order: "Pelecaniformes", family: "Pelecanidae", category: "Pelicans" },
+    { order: "Galliformes", family: "Phasianidae", category: "Pheasants & Allies" },
     { order: "Piciformes", family: "Picidae", category: "Woodpeckers" },
     { order: "Passeriformes", family: "Pittidae", category: "Pittas" },
     { order: "Passeriformes", family: "Ploceidae", category: "Weavers" },
     { order: "Psittaciformes", family: "Psittacidae", category: "Parrots" },
     { order: "Passeriformes", family: "Pycnonotidae", category: "Bulbuls" },
-    {
-      order: "Gruiformes",
-      family: "Rallidae",
-      category: "Rails, Crakes & Coots",
-    },
-    {
-      order: "Charadriiformes",
-      family: "Scolopacidae",
-      category: "Sandpipers & Allies",
-    },
+    { order: "Gruiformes", family: "Rallidae", category: "Rails, Crakes & Coots" },
+    { order: "Charadriiformes", family: "Scolopacidae", category: "Sandpipers & Allies" },
     { order: "Strigiformes", family: "Strigidae", category: "Owls" },
     { order: "Passeriformes", family: "Sturnidae", category: "Starlings" },
-    {
-      order: "Passeriformes",
-      family: "Sylviidae",
-      category: "Sylviid Warblers",
-    },
-    {
-      order: "Pelecaniformes",
-      family: "Threskiornithidae",
-      category: "Ibises & Spoonbills",
-    },
+    { order: "Passeriformes", family: "Sylviidae", category: "Sylviid Warblers" },
+    { order: "Pelecaniformes", family: "Threskiornithidae", category: "Ibises & Spoonbills" },
     { order: "Passeriformes", family: "Timaliidae", category: "Babblers" },
     { order: "Passeriformes", family: "Turdidae", category: "Thrushes" },
     { order: "Strigiformes", family: "Tytonidae", category: "Barn Owls" },
@@ -153,68 +74,68 @@ const BirdData = () => {
 
   // Extract unique orders from the taxonomy data
   const birdOrders = useMemo(() => {
-    const orders = new Set(sriLankanBirdTaxonomy.map((item) => item.order));
+    const orders = new Set(sriLankanBirdTaxonomy.map(item => item.order));
     return [...orders].sort();
   }, []);
-
-  // Fetch data from the backend on component mount
-  useEffect(() => {
-    const fetchBirds = async () => {
-      try {
-        // Updated to a plausible API endpoint
-        const response = await axios.get("http://localhost:3001/api/birds/get");
-
-        // Ensure the data is an array before setting state
-        if (Array.isArray(response.data)) {
-          setBirds(response.data);
-        } else if (
-          response.data &&
-          response.data.data &&
-          Array.isArray(response.data.data)
-        ) {
-          // Handles a common API response structure like { success: true, data: [...] }
-          setBirds(response.data.data);
-        } else {
-          setBirds([]);
-          console.error("API response is not an array:", response.data);
-        }
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching bird data:", err);
-        setError(
-          "Failed to fetch bird data. Please check if the backend server is running."
-        );
-        setLoading(false);
+ 
+  // Function to fetch birds
+  const fetchBirds = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/api/birds/get");
+      if (Array.isArray(response.data)) {
+        setBirds(response.data);
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        setBirds(response.data.data);
+      } else {
+        setBirds([]);
+        console.error("API response is not an array:", response.data);
       }
-    };
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching bird data:", err);
+      setError("Failed to fetch bird data. Please check if the backend server is running.");
+      setLoading(false);
+    }
+  };
+
+  // Function to handle bird deletion
+  const handleConfirmDelete = async () => {
+    if (!selectedBird) return;
+    try {
+      const response = await axios.delete(`http://localhost:3001/api/birds/delete/${selectedBird._id}`);
+      setNotification(response.data.message || "Bird deleted successfully.");
+      console.log("Delete response:", response.data);
+      // Refresh the bird list after successful deletion
+      fetchBirds();
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to delete bird.";
+      setNotification(`Error: ${errorMessage}`);
+      console.error("Error deleting bird:", error);
+    } finally {
+      setShowDeleteConfirm(false);
+      setSelectedBird(null);
+    }
+  };
+
+  // Initial data fetch and message handling
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      setNotification(location.state.message);
+      window.history.replaceState({}, document.title);
+    }
     fetchBirds();
-
-
-    // const deleteBird = async()=>{
-    //   try{
-    //     const response = await axios.delete(`http://localhost:3001/api/birds/delete/${selectedBird._id}`);
-    //     console.log("Delete response:", response.data);
-    //   }
-    // }
-  }, []);
+  }, [location.state]);
 
   // Filter birds based on search term, family, and order
   const filteredBirds = useMemo(() => {
-    return birds.filter((bird) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        (bird.primaryName &&
-          bird.primaryName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (bird.scientificName &&
-          bird.scientificName.toLowerCase().includes(searchTerm.toLowerCase()));
+    return birds.filter(bird => {
+      const matchesSearch = searchTerm === "" ||
+        (bird.primaryName && bird.primaryName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (bird.scientificName && bird.scientificName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesFamily =
-        selectedFamily === "" ||
-        (bird.family && bird.family === selectedFamily);
+      const matchesFamily = selectedFamily === "" || (bird.family && bird.family === selectedFamily);
 
-      const matchesOrder =
-        selectedOrder === "" || (bird.order && bird.order === selectedOrder);
+      const matchesOrder = selectedOrder === "" || (bird.order && bird.order === selectedOrder);
 
       return matchesSearch && matchesFamily && matchesOrder;
     });
@@ -236,6 +157,14 @@ const BirdData = () => {
     setSelectedOrder("");
   };
 
+  const handleEditClick = (birdId) => {
+    navigate(`/admin/edit-bird/${birdId}`);
+  };
+
+  const handleAddBirdClick = () => {
+    navigate("/admin/add-bird");
+  };
+
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
@@ -245,6 +174,15 @@ const BirdData = () => {
       <div className="w-4/5 p-4 ml-auto">
         {/* Header Section */}
         <div className="bg-[#f5f6f5] rounded-lg p-6 mb-6">
+          {notification && (
+            <div className={`mb-4 p-4 rounded-lg flex justify-between items-center animate-fade-in-down ${notification.includes("Error") ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              <p className="font-medium">{notification}</p>
+              <button onClick={() => setNotification(null)} className={`transition-colors ${notification.includes("Error") ? 'text-red-700 hover:text-red-900' : 'text-green-700 hover:text-green-900'}`}>
+                <FaTimes />
+              </button>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-2xl font-bold text-[#314124] mb-2">
@@ -255,7 +193,7 @@ const BirdData = () => {
               </p>
             </div>
             <button
-              onClick={() => (window.location.href = "/admin/add-bird")}
+              onClick={handleAddBirdClick}
               className="flex items-center gap-2 px-4 py-2 bg-[#506142] text-white rounded-lg hover:bg-[#3f4d34] transition-all duration-200"
             >
               <FaPlus className="text-sm" /> Add New Bird
@@ -426,9 +364,7 @@ const BirdData = () => {
                       <td className="px-6 py-4">
                         <div className="flex gap-2 justify-center">
                           <button
-                            onClick={() =>
-                              (window.location.href = `/admin/edit-bird/${bird._id}`)
-                            }
+                            onClick={() => handleEditClick(bird._id)}
                             className="p-2 text-[#506142] hover:bg-[#506142] hover:text-white rounded-lg transition-all duration-200"
                             title="Edit Bird"
                           >
@@ -482,7 +418,7 @@ const BirdData = () => {
                 Cancel
               </button>
               <button
-                onClick={cancelDelete}
+                onClick={handleConfirmDelete}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-medium"
               >
                 Delete

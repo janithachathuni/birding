@@ -91,3 +91,83 @@ exports.deleteBird = async(req, res) =>{
         res.status(500).json({message:"Error deleting bird"})
     }
 }
+
+//get one bird (for the encyclopedia card)
+exports.getBirdById = async(req, res) =>{
+    try{
+        const {id} = req.params;
+        const bird = await Bird.findById(id);
+        if(!bird){
+            return res.status(404).json({message:"Bird not found"})
+        }else{
+            res.status(200).json(bird)  
+        }
+    }catch(error){
+        res.status(500).json({message:"Error fetching bird"})
+    }
+}
+
+//edit bird
+exports.editBird = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Only allow updates for these fields
+        const allowedFields = [
+            "primaryName",
+            "otherNames",
+            "scientificName",
+            "order",
+            "family",
+            "description",
+            "sinhalaName",
+            "tamilName",
+            "image",
+            "habitatMap",
+            "frequency",
+            "residency",
+            "endemic",
+            "places"
+        ];
+
+        const updatedData = {};
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updatedData[field] = req.body[field];
+            }
+        });
+
+        const updatedBird = await Bird.findByIdAndUpdate(id, updatedData, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!updatedBird) {
+            return res.status(404).json({ message: "Bird not found" });
+        }
+
+        res.status(200).json({
+            message: "Bird updated successfully",
+            bird: updatedBird
+        });
+
+    } catch (error) {
+        console.log("Error updating bird:", error);
+
+        if (error.code === 11000) {
+            return res.status(400).json({
+                message: "Bird with this primary name or scientific name already exists"
+            });
+        }
+
+        if (error.name === "ValidationError") {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({
+                message: "Validation Error",
+                errors: messages
+            });
+        }
+
+        res.status(500).json({ message: "Error updating bird" });
+    }
+};

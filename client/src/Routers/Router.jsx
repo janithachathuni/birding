@@ -171,7 +171,7 @@ const Router = createBrowserRouter([
           },
 
           {
-            path: "edit-bird",
+            path: "edit-bird/:id",
             element: (
               <ProtectedRoute requiredRole="admin">
                 <AdminEditBirdData/>
