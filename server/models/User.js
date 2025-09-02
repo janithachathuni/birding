@@ -6,7 +6,10 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'birder'], default: 'birder' },
-  moderator: {type: Boolean, default: false}
+  moderator: {type: Boolean, default: false},
+
+  isFirstLogin: { type: Boolean, default: true },
+  profileCompleted: { type: Boolean, default: false },
 });
 
 // Pre-save hook to hash password before saving

@@ -25,7 +25,9 @@ exports.register = async (req, res) => {
       username, 
       email, 
       password,
-      moderator: moderator || false // Explicitly set moderator field
+      moderator: moderator || false,  // Explicitly set moderator field
+      isFirstLogin: true,
+      profileCompleted: false
     });
     
     console.log("User created successfully:", user.email);

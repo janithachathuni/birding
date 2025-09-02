@@ -63,7 +63,7 @@ const Router = createBrowserRouter([
 
       //public bird data pages
       {
-        path: "/bird",
+        path: "/bird/:id", // Updated to accept bird ID parameter
         element: <SingleBird />,
       },
 
@@ -203,8 +203,6 @@ const Router = createBrowserRouter([
             )
           },
 
-          
-
           {
             path: "checklists",
             element: (
@@ -270,8 +268,6 @@ const Router = createBrowserRouter([
           }
         ],
       },
-
-      
     ],
   },
 ]);

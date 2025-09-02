@@ -165,6 +165,10 @@ const BirdData = () => {
     navigate("/admin/add-bird");
   };
 
+  const handleRowClick = (birdId) => {
+  navigate(`/bird/${birdId}`);
+};
+
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
@@ -330,6 +334,7 @@ const BirdData = () => {
                       className={`border-b border-gray-200 hover:bg-[#e8e9e8] transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-[#f5f6f5]"
                       }`}
+                      onClick={() => handleRowClick(bird._id)}
                     >
                       <td className="px-6 py-4">
                         <img
