@@ -41,8 +41,9 @@ import BirderNotifications from "../Pages/Birder/Notifications";
 import BirderDiscussion from "../Pages/Birder/Discussion";
 import ProtectedRoute from "../Components/ProtectedRoute";
 
+//temporary!!
 import BirderCreateProfile from "../Pages/Birder/CreateProfile";
-import BirderProfile from "../Pages/Birder/Profile";
+import BirderCreatePost from "../Pages/Birder/CreatePost";
 
 const Router = createBrowserRouter([
   {
@@ -82,7 +83,7 @@ const Router = createBrowserRouter([
 
       //unauthorized, error 404s, forgot password pages
       {
-        path: "*", 
+        path: "*",
         element: <Error404 />,
       },
 
@@ -97,13 +98,13 @@ const Router = createBrowserRouter([
       },
 
       {
-        path: '/create-profile',
+        path: "/create-profile",
         element: <BirderCreateProfile />,
       },
 
       {
-        path: '/profile/',
-        element: <BirderProfile />,
+        path: "/create-post",
+        element: <BirderCreatePost />,
       },
 
       //admin routes
@@ -114,54 +115,54 @@ const Router = createBrowserRouter([
             path: "content-moderation",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminContentModeration/>
+                <AdminContentModeration />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "manage-moderators",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminModeratorManagement/>
+                <AdminModeratorManagement />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "settings",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminSettings/>
+                <AdminSettings />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "dashboard",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminDashboard/>
+                <AdminDashboard />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "statistics",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminStatistics/>
+                <AdminStatistics />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "advertisements",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminAdvertisements/>
+                <AdminAdvertisements />
               </ProtectedRoute>
-            )
+            ),
           },
 
           //make notifications page!!!
@@ -169,37 +170,37 @@ const Router = createBrowserRouter([
             path: "notifications",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminContentModeration/>
+                <AdminContentModeration />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "bird-data",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminBirdData/>
+                <AdminBirdData />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "edit-bird/:id",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminEditBirdData/>
+                <AdminEditBirdData />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "add-bird",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminAddNewBirdData/>
+                <AdminAddNewBirdData />
               </ProtectedRoute>
-            )
-          }
+            ),
+          },
         ],
       },
 
@@ -211,63 +212,63 @@ const Router = createBrowserRouter([
             path: "dashboard",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderDashboard/>
+                <BirderDashboard />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "checklists",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderChecklists/>
+                <BirderChecklists />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "trips",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderTrips/>
+                <BirderTrips />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "forum",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderForum/>
+                <BirderForum />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "settings",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderSettings/>
+                <BirderSettings />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "blog",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderBlog/>
+                <BirderBlog />
               </ProtectedRoute>
-            )
+            ),
           },
 
           {
             path: "notifications",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderNotifications/>
+                <BirderNotifications />
               </ProtectedRoute>
-            )
+            ),
           },
 
           // discussion/:id
@@ -275,10 +276,10 @@ const Router = createBrowserRouter([
             path: "discussion",
             element: (
               <ProtectedRoute requiredRole="birder">
-                <BirderDiscussion/>
+                <BirderDiscussion />
               </ProtectedRoute>
-            )
-          }
+            ),
+          },
         ],
       },
     ],

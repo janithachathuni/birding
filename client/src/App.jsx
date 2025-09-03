@@ -8,7 +8,7 @@ function App() {
   
   // Paths where Navbar should appear
   const showNavbarPaths = [
-    '/', 
+    // '/', 
     '/login', 
     '/sign-up',
     '/forgot-password-page1',

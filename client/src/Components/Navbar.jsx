@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import kurulloIcon from '../assets/kurullo.png';
 import profilepic from '../assets/default_profile_pic.png';
+import navbarlogo from '../assets/navbarlogo.png';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,24 +25,57 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between">
         {/* Left-aligned logo and name */}
         <div className="flex items-center">
-          <img 
+          {/* <img 
             src={kurulloIcon} 
             alt="Kurullo Logo" 
             className="h-10 w-10 mr-2"
-          />
-          <span className="text-3xl font-extrabold text-[#506142]">
+          /> */}
+          <div className='flex items-center gap-3 text-3xl font-extrabold text-[#506142]'>
+                        <Link to="/"><h1>Kurullo</h1></Link>
+                         <img
+                src={navbarlogo}
+                className="h-5 -ml-5 -mt-7"
+                alt="Kurullo logo"
+              />
+
+          </div>
+          {/* <span className="text-3xl font-extrabold text-[#506142]">
             <Link to="/"><h1>Kurullo</h1></Link>
-          </span>
+          </span> */}
+
+
+
+            <div className="flex items-center gap-3">
+            
+              <img
+                src={navbarlogo}
+                className="h-12 -ml-10 -mt-25"
+                alt="Kurullo logo"
+              />
+            </div>
+
+
+
+
+
+
         </div>
 
         {/* Right-aligned items */}
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-10">
           <Link to="/about" className="text-gray-900 hover:text-amber-900">
             About
           </Link>
-          <Link to="/birdlist" className="text-gray-900 hover:text-amber-900">
-            Birdlist
+          <Link to="/events" className="text-gray-900 hover:text-amber-900">
+            Events
           </Link>
+          <Link to="/articles" className="text-gray-900 hover:text-amber-900">
+            Articles
+          </Link>
+          <Link to="/birdlist" className="text-gray-900 hover:text-amber-900">
+            Birds of Sri Lanka
+          </Link>
+          
        
           {/* Conditional rendering based on login status */}
           {isLoggedIn ? (

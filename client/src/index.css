@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 body {
-  font-family: 'Karla', sans-serif;
+  font-family: 'Schibsted Grotesk', sans-serif;
   color: black;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 h1, h2 {

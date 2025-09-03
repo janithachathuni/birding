@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaCamera } from "react-icons/fa";
 import createprofilebird from "../../Assets/createprofilebird.gif";
+import bannerimg from "../../Assets/bannerimg.png";
+import default_profile_pic from "../../Assets/default_profile_pic.png";
 
 const CreateProfile = ({ onComplete }) => {
   const [step, setStep] = useState(0);
@@ -78,9 +80,9 @@ const CreateProfile = ({ onComplete }) => {
         <div className="flex-1 flex flex-col justify-center overflow-y-auto">
           {step === 0 && (
             <div className="text-center px-6">
-              <h2 className="text-2xl font-bold mb-4">Complete Your Profile</h2>
+              <h2 className="text-2xl text-[#606c38] font-bold mb-4">Welcome to your new Kurullo account!</h2>
               <p className="text-gray-600 mb-6">
-                Welcome! Let’s set up your birding profile to get started.
+                Let’s set up your birding profile to get started.
               </p>
               <button
                 onClick={nextStep}
@@ -102,7 +104,7 @@ const CreateProfile = ({ onComplete }) => {
                   <img
                     src={
                       previewUrls.bannerPic ||
-                      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Dendrocygna_javanica_-_Chiang_Mai.jpg/500px-Dendrocygna_javanica_-_Chiang_Mai.jpg"
+                      bannerimg
                     }
                     alt="Banner"
                     className="w-full h-full object-cover"
@@ -126,7 +128,7 @@ const CreateProfile = ({ onComplete }) => {
                       <img
                         src={
                           previewUrls.profilePic ||
-                          "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Dendrocygna_javanica_-_Chiang_Mai.jpg/500px-Dendrocygna_javanica_-_Chiang_Mai.jpg"
+                          default_profile_pic
                         }
                         alt="Profile"
                         className="w-36 h-36 rounded-full border-4 border-white object-cover bg-white"
@@ -189,8 +191,12 @@ const CreateProfile = ({ onComplete }) => {
 
           {step === 2 && (
             <div className="text-center px-6">
+              <img
+                src={createprofilebird}
+                className="items-center mx-auto mb-4"
+              />
               <h2 className="text-2xl font-bold mb-4">
-                🎉 Profile Created Successfully!
+                Profile Created Successfully!
               </h2>
               <p className="text-gray-600 mb-6">
                 You’re all set. Would you like to add your first birding post
@@ -207,7 +213,7 @@ const CreateProfile = ({ onComplete }) => {
                   onClick={onComplete}
                   className="bg-gray-200 px-6 py-2 rounded-full hover:bg-gray-300"
                 >
-                  Skip for Now
+                  Maybe Later
                 </button>
               </div>
             </div>

@@ -23,6 +23,7 @@ module.exports = {
                 profilePic,
                 bannerPic
             })
+            
             await profile.save();
 
             // Update user's profileCompleted status
