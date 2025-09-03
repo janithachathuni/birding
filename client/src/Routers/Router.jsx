@@ -41,6 +41,9 @@ import BirderNotifications from "../Pages/Birder/Notifications";
 import BirderDiscussion from "../Pages/Birder/Discussion";
 import ProtectedRoute from "../Components/ProtectedRoute";
 
+import BirderCreateProfile from "../Pages/Birder/CreateProfile";
+import BirderProfile from "../Pages/Birder/Profile";
+
 const Router = createBrowserRouter([
   {
     path: "/",
@@ -91,6 +94,16 @@ const Router = createBrowserRouter([
       {
         path: "/forgot-password-page2",
         element: <ForgotPassword2 />,
+      },
+
+      {
+        path: '/create-profile',
+        element: <BirderCreateProfile />,
+      },
+
+      {
+        path: '/profile/',
+        element: <BirderProfile />,
       },
 
       //admin routes

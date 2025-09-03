@@ -334,25 +334,28 @@ const BirdData = () => {
                       className={`border-b border-gray-200 hover:bg-[#e8e9e8] transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-[#f5f6f5]"
                       }`}
-                      onClick={() => handleRowClick(bird._id)}
+                      
                     >
                       <td className="px-6 py-4">
                         <img
                           src={bird.image}
                           alt={bird.primaryName}
                           className="w-16 h-16 object-cover rounded-lg"
+                          onClick={() => handleRowClick(bird._id)}
                         />
                       </td>
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-semibold text-gray-800">
                             {bird.primaryName}
+                            
                           </p>
                           {bird.otherNames && bird.otherNames.length > 0 && (
                             <p className="text-sm text-gray-500 mt-1">
                               Also known as: {bird.otherNames.join(", ")}
                             </p>
                           )}
+                          
                         </div>
                       </td>
                       <td className="px-6 py-4">
