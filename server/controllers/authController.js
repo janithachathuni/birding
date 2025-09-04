@@ -40,7 +40,9 @@ exports.register = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        moderator: user.moderator // Include moderator in response
+        moderator: user.moderator, // Include moderator in response
+        isFirstLogin: user.isFirstLogin, // Added this line
+        profileCompleted: user.profileCompleted // Added this line
       }
     });
   } catch (error) {
@@ -84,7 +86,9 @@ exports.login = async (req, res) => {
         email: user.email,
         username: user.username,
         role: user.role,
-        moderator: user.moderator // Include moderator in response
+        moderator: user.moderator, // Include moderator in response
+        isFirstLogin: user.isFirstLogin, // Added this line
+        profileCompleted: user.profileCompleted // Added this line
       }
     });
   } catch (error) {

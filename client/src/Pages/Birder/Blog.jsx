@@ -16,6 +16,8 @@ const Blog = () => {
   const [replyTo, setReplyTo] = useState({});
   const [newReply, setNewReply] = useState({});
 
+  const [activeTab, setActiveTab] = useState("Posts");
+
   // Sample blog posts data
   const posts = [
     {
@@ -38,8 +40,8 @@ const Blog = () => {
         },
       ],
       description:
-        "Had an amazing day exploring the city! The architecture here is absolutely stunning and every corner tells a story.",
-      tags: ["#travel", "#architecture", "#citylife", "#photography"],
+        "Here are some of the birds i saw in wilpattu national park.",
+      tags: ["Sri Lanka Jungle-fowl", "Little Egret", "Crested Serpent Eagle"],
     },
     {
       id: 2,
@@ -57,8 +59,8 @@ const Blog = () => {
         },
       ],
       description:
-        "Sunset vibes from yesterday's adventure. Nature never fails to amaze me with its beautiful colors.",
-      tags: ["#sunset", "#nature", "#peaceful", "#golden"],
+        "Beautiful birds i saw on the way home in galle.",
+      tags: ["Crested Serpent Eagle", "Grey Heron"],
     },
   ];
 
@@ -177,7 +179,7 @@ const Blog = () => {
         <div className="bg-[white] w-full rounded-lg">
           {/* Profile Header */}
           <div className="flex items-center max-w-3xl w-full">
-            <div className="border-b border-gray-200 overflow-hidden bg-white w-full">
+            <div className="overflow-hidden bg-white w-full">
               {/* Banner image with action buttons */}
               <div className="h-48 bg-gray-200 relative group">
                 <img
@@ -252,7 +254,7 @@ const Blog = () => {
                 </div>
 
                 {/* Bio */}
-                <p className="mt-3 text-gray-700 text-sm leading-relaxed max-w-xl">
+                <p className="mt-3 text-gray-800 text-sm leading-relaxed max-w-xl">
                   bio details Lorem ipsum dolor sit amet consectetur adipisicing
                   elit. Nobis illum gnissimos, illo vero hic magnam fuga tempora
                   assumenda inventore!
@@ -260,16 +262,33 @@ const Blog = () => {
                 <br />
 
                 {/* Followers & Following - centered */}
-                {/* <div className="flex justify-center gap-6 mt-6 text-sm mb-5 text-gray-700">
+                <div className="flex justify-left gap-6 text-sm mb-2 text-gray-700">
                   <p>
                     <span className="font-semibold">150</span> Followers
                   </p>
                   <p>
                     <span className="font-semibold">120</span> Following
                   </p>
-                </div> */}
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* choosing for posts, articles and likes */}
+          <div className="flex justify-around border-b border-gray-200">
+            {["Posts", "Articles", "Likes"].map((tab) => (
+              <button
+                key={tab}
+                className={`flex-1 py-3 text-center font-medium transition ${
+                  activeTab === tab
+                    ? "text-[#143829] border-b-3 border-[#143829]"
+                    : "text-gray-500 hover:text-[#143829]"
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
           {/* Post area */}
@@ -281,10 +300,10 @@ const Blog = () => {
               return (
                 <div
                   key={post.id}
-                  className="bg-yellow-50  border-[#143829] rounded-lg overflow-hidden"
+                  className="bg-[#f5f6f5] border  border-gray-200 rounded-lg overflow-hidden"
                 >
                   {/* Post Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-[#143829]">
+                  <div className="flex items-center  justify-between p-4 border-b border-[#143829]">
                     <div className="flex items-center space-x-3">
                       <img
                         src={post.profilePic}
@@ -363,7 +382,7 @@ const Blog = () => {
                       {post.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="text-[#a0361b] text-sm font-medium hover:text-[#c4501b] transition cursor-pointer"
+                          className="text-[black] text-sm underline font-medium hover:text-[#c4501b] transition cursor-pointer"
                         >
                           {tag}
                         </span>
@@ -585,60 +604,59 @@ const Blog = () => {
       </div>
       <UserSidebarRight />
 
-{/* Lightbox Modal */}
-{lightbox.isOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-    {/* Close button (top-right corner of screen) */}
-    <button
-      className="fixed top-6 right-6 text-white text-4xl font-bold z-50 hover:text-gray-300 transition"
-      onClick={() => setLightbox({ isOpen: false, postId: null })}
-    >
-      ×
-    </button>
+      {/* Lightbox Modal */}
+      {lightbox.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          {/* Close button (top-right corner of screen) */}
+          <button
+            className="fixed top-6 right-6 text-white text-4xl font-bold z-50 hover:text-gray-300 transition"
+            onClick={() => setLightbox({ isOpen: false, postId: null })}
+          >
+            ×
+          </button>
 
-    {/* Enlarged Image */}
-    <img
-      src={
-        posts
-          .find((p) => p.id === lightbox.postId)
-          .images[currentImageIndex[lightbox.postId] || 0].url
-      }
-      alt="Enlarged"
-      className="max-h-[95vh] w-auto object-contain"
-      onContextMenu={preventCopy}
-      onDragStart={preventCopy}
-    />
+          {/* Enlarged Image */}
+          <img
+            src={
+              posts.find((p) => p.id === lightbox.postId).images[
+                currentImageIndex[lightbox.postId] || 0
+              ].url
+            }
+            alt="Enlarged"
+            className="max-h-[95vh] w-auto object-contain"
+            onContextMenu={preventCopy}
+            onDragStart={preventCopy}
+          />
 
-    {/* Prev/Next buttons pinned to far left/right */}
-    {posts.find((p) => p.id === lightbox.postId).images.length > 1 && (
-      <>
-        <button
-          onClick={() =>
-            prevImage(
-              lightbox.postId,
-              posts.find((p) => p.id === lightbox.postId).images.length
-            )
-          }
-          className="fixed left-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
-        >
-          ‹
-        </button>
-        <button
-          onClick={() =>
-            nextImage(
-              lightbox.postId,
-              posts.find((p) => p.id === lightbox.postId).images.length
-            )
-          }
-          className="fixed right-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
-        >
-          ›
-        </button>
-      </>
-    )}
-  </div>
-)}
-
+          {/* Prev/Next buttons pinned to far left/right */}
+          {posts.find((p) => p.id === lightbox.postId).images.length > 1 && (
+            <>
+              <button
+                onClick={() =>
+                  prevImage(
+                    lightbox.postId,
+                    posts.find((p) => p.id === lightbox.postId).images.length
+                  )
+                }
+                className="fixed left-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() =>
+                  nextImage(
+                    lightbox.postId,
+                    posts.find((p) => p.id === lightbox.postId).images.length
+                  )
+                }
+                className="fixed right-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

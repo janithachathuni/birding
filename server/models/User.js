@@ -8,8 +8,13 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['admin', 'birder'], default: 'birder' },
   moderator: {type: Boolean, default: false},
 
+  //for profile setup
   isFirstLogin: { type: Boolean, default: true },
   profileCompleted: { type: Boolean, default: false },
+
+  // Account status
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // Pre-save hook to hash password before saving

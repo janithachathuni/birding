@@ -8,5 +8,7 @@ const ProfileSchema = new mongoose.Schema({
     bio: { type: String, maxlength: 500 },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    createdAt: { type: Date, default: Date.now },
+    blocked: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 });
+
+module.exports = mongoose.model('Profile', ProfileSchema);

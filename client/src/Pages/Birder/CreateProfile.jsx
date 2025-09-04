@@ -12,6 +12,7 @@ const CreateProfile = ({ onComplete }) => {
     profilePic: null,
     bannerPic: null,
   });
+  const [loading, setLoading] = useState(false);
 
   const [previewUrls, setPreviewUrls] = useState({
     profilePic: null,
@@ -45,10 +46,48 @@ const CreateProfile = ({ onComplete }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Profile data:", formData);
-    setStep(2);
+    setLoading(true);
+
+    try {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (!userData) {
+        alert('User session not found. Please log in again.');
+        return;
+      }
+
+      // Create FormData for file upload
+      const profileFormData = new FormData();
+      profileFormData.append('displayName', formData.name);
+      profileFormData.append('bio', formData.bio);
+      profileFormData.append('userId', userData.id);
+      
+      if (formData.profilePic) {
+        profileFormData.append('profilePic', formData.profilePic);
+      }
+      if (formData.bannerPic) {
+        profileFormData.append('bannerPic', formData.bannerPic);
+      }
+
+      const response = await fetch('http://localhost:3001/api/profile/create', {
+        method: 'POST',
+        body: profileFormData,
+      });
+
+      if (response.ok) {
+        console.log("Profile created successfully");
+        setStep(2);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to create profile');
+      }
+    } catch (error) {
+      console.error("Error creating profile:", error);
+      alert('Error creating profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
@@ -56,13 +95,14 @@ const CreateProfile = ({ onComplete }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      {/* Fixed size box but 1cm margin on top and bottom */}
-      <div className="relative bg-white rounded-2xl p-6 w-full justify-center max-w-2xl h-[calc(100vh-1cm)] flex flex-col">
-        {/* Navigation Arrows */}
+      {/* Wider container to accommodate navigation buttons */}
+      <div className="relative bg-white rounded-2xl p-4 w-full max-w-4xl h-[calc(100vh-1cm)] flex flex-col">
+        {/* Navigation Arrows - positioned outside the main content area */}
         {step > 0 && (
           <button
             onClick={prevStep}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 w-10 h-10 flex items-center justify-center rounded-full shadow-md"
+            disabled={loading}
+            className="absolute left-6 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 w-12 h-12 flex items-center justify-center rounded-full shadow-md z-10"
           >
             &lt;
           </button>
@@ -70,19 +110,20 @@ const CreateProfile = ({ onComplete }) => {
         {step < 2 && (
           <button
             onClick={nextStep}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 w-10 h-10 flex items-center justify-center rounded-full shadow-md"
+            disabled={loading}
+            className="absolute right-6 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 w-12 h-12 flex items-center justify-center rounded-full shadow-md z-10"
           >
             &gt;
           </button>
         )}
 
-        {/* Slide Content */}
-        <div className="flex-1 flex flex-col justify-center overflow-y-auto">
+        {/* Main content container */}
+        <div className="flex-1 flex flex-col justify-center overflow-y-auto mx-16">
           {step === 0 && (
             <div className="text-center px-6">
               <h2 className="text-2xl text-[#606c38] font-bold mb-4">Welcome to your new Kurullo account!</h2>
               <p className="text-gray-600 mb-6">
-                Let’s set up your birding profile to get started.
+                Let's set up your birding profile to get started.
               </p>
               <button
                 onClick={nextStep}
@@ -96,7 +137,7 @@ const CreateProfile = ({ onComplete }) => {
           {step === 1 && (
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col items-center max-w-3xl w-full"
+              className="flex flex-col items-center w-full max-w-2xl mx-auto"
             >
               <div className="border border-gray-200 rounded-lg overflow-hidden bg-white w-full">
                 {/* Banner image */}
@@ -160,6 +201,7 @@ const CreateProfile = ({ onComplete }) => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      placeholder="Enter your display name"
                       className="w-full border border-gray-300 rounded-md px-3 py-1"
                     />
                   </div>
@@ -172,16 +214,19 @@ const CreateProfile = ({ onComplete }) => {
                       name="bio"
                       value={formData.bio}
                       onChange={handleInputChange}
+                      placeholder="Tell us about your birding interests..."
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      rows={3}
                     />
                   </div>
 
                   <div className="flex justify-end mb-3">
                     <button
                       type="submit"
-                      className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800"
+                      disabled={loading}
+                      className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 disabled:opacity-50"
                     >
-                      Save Profile
+                      {loading ? "Creating..." : "Save Profile"}
                     </button>
                   </div>
                 </div>
@@ -194,26 +239,21 @@ const CreateProfile = ({ onComplete }) => {
               <img
                 src={createprofilebird}
                 className="items-center mx-auto mb-4"
+                alt="Profile created"
               />
               <h2 className="text-2xl font-bold mb-4">
                 Profile Created Successfully!
               </h2>
               <p className="text-gray-600 mb-6">
-                You’re all set. Would you like to add your first birding post
+                You're all set. Would you like to add your first birding post
                 now?
               </p>
               <div className="flex justify-center gap-4">
                 <button
                   onClick={onComplete}
-                  className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800"
-                >
-                  Yes, Create Post
-                </button>
-                <button
-                  onClick={onComplete}
                   className="bg-gray-200 px-6 py-2 rounded-full hover:bg-gray-300"
                 >
-                  Maybe Later
+                  Continue to Dashboard
                 </button>
               </div>
             </div>

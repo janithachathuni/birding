@@ -51,8 +51,8 @@ const UserSidebar = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-[#eef7f1] text-[#143829]'
-                    : 'text-black hover:bg-[#eef7f1] hover:text-[#143829]'
+                    ? 'bg-[#f5f6f5] text-[#143829] '
+                    : 'text-black hover:bg-[#f5f6f5] hover:text-[#143829]'
                 }`
               }
             >

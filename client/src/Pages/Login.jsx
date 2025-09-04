@@ -11,17 +11,32 @@ const Login = () => {
 const handleSubmit = (e) => {
   e.preventDefault();
 
-  console.log("Making request to:", "http://localhost:3001/api/auth/login");
+  // Update this to match your backend port (likely 3000)
+  const apiUrl = "http://localhost:3001/api/auth/login";
+  console.log("Making request to:", apiUrl);
 
   axios
-    .post("http://localhost:3001/api/auth/login", { email, password })
+    .post(apiUrl, { email, password })
     .then((result) => {
-      console.log(result);
+      console.log("Full login response:", result);
+      console.log("Response data:", result.data);
+      console.log("User data:", result.data.user);
 
       // Check if the response contains user data with role information
       if (result.data && result.data.user) {
+        // Log the user data before storing
+        console.log("Storing user data:", result.data.user);
+        console.log("isFirstLogin:", result.data.user.isFirstLogin);
+        console.log("profileCompleted:", result.data.user.profileCompleted);
+        
         //store user data in local storage
-        localStorage.setItem("user", JSON.stringify(result.data.user))
+        localStorage.setItem("user", JSON.stringify(result.data.user));
+        
+        // Verify what was stored
+        const storedUser = localStorage.getItem("user");
+        console.log("Stored in localStorage:", storedUser);
+        console.log("Parsed stored user:", JSON.parse(storedUser));
+        
         // Check if user has admin role
         if (result.data.user.role === "admin") {
           navigate("/admin/dashboard");
@@ -31,15 +46,18 @@ const handleSubmit = (e) => {
       } 
       // Handle legacy "Success" response for backward compatibility
       else if (result.data === "Success") {
+        console.log("Legacy response received");
         navigate("/birder/dashboard");
       } 
       // Handle invalid credentials
       else {
+        console.log("Invalid response structure:", result.data);
         alert("Invalid credentials");
       }
     })
     .catch((err) => {
-      console.log(err);
+      console.log("Login error:", err);
+      console.log("Error response:", err.response);
       alert("Login failed. Please try again.");
     });
 };
