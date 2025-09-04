@@ -196,7 +196,7 @@ const UserSidebarRight = () => {
     </div>
     
     {/* Sticky footer */}
-    <div className="border-t border-gray-300 p-4 bg-white">
+    <div className="border-t border-gray-200 p-4 bg-white">
       <p className="text-xs text-gray-500">© 2025 Kurullo</p>
     </div>
   </div>

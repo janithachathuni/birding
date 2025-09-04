@@ -34,7 +34,7 @@ mongoose.connect('mongodb://localhost:27017/kurullo')
 // Routes
 app.use('/api/auth', authRoutes); 
 app.use('/api/birds', birdRoutes);
-app.use('/api/profile', profileRoutes); // Added profile routes
+app.use('/api/profile', profileRoutes);
 
 // Default route
 app.get('/', (req, res) => {
