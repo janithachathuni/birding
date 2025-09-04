@@ -33,11 +33,11 @@ const UserSidebar = () => {
   ];
 
   return (
-    <div className="fixed top-0 left-0 h-screen w-[20%] bg-white flex flex-col border-r border-gray-200">
+    <div className="fixed top-0 left-0 h-screen w-[20%] bg-white flex flex-col border-r border-gray-300">
       {/* Sidebar Header */}
       <div className="p-4 -mb-5">
         <NavLink to="/" className="flex justify-center">
-          <h2 className="text-2xl font-extrabold text-[#506142]">Kurullo</h2>
+          <h2 className="text-2xl font-extrabold text-[#143829]">Kurullo</h2>
         </NavLink>
       </div>
 
@@ -51,8 +51,8 @@ const UserSidebar = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-[#f5f6f5] text-[#425137]'
-                    : 'text-black hover:bg-[#f5f6f5] hover:text-[#506142]'
+                    ? 'bg-[#eef7f1] text-[#143829]'
+                    : 'text-black hover:bg-[#eef7f1] hover:text-[#143829]'
                 }`
               }
             >
@@ -64,7 +64,7 @@ const UserSidebar = () => {
       </div>
 
       {/* Logout*/}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-300">
         <button 
         onClick={handleLogout}
         className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142] rounded-lg transition-colors">

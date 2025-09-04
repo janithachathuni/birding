@@ -164,7 +164,7 @@ const Home = () => {
               className=" w-[80%] mb-7"
             /> */}
             <div className="flex items-center gap-3">
-  <h1 className="text-xl mb-7 md:text-[5rem] text-[#25311c] font-bold tracking-tight">
+  <h1 className="text-xl mb-7 md:text-[5rem] text-[black] font-bold tracking-tight">
     Kurullo
   </h1>
   <img
@@ -207,7 +207,7 @@ const Home = () => {
 
             <Link
               to="/login"
-              className="inline-block px-8 py-4 w-80 text-center bg-[#435238] hover:bg-white rounded-full text-white hover:text-black border hover:border-black font-semibold tracking-wide transition-all duration-300 transform hover:-translate-y-1"
+              className="inline-block px-8 py-4 w-80 text-center bg-[#143829] hover:bg-white rounded-full text-white hover:text-black border hover:border-black font-semibold tracking-wide transition-all duration-300 transform hover:-translate-y-1"
             >
               Get Started
             </Link>

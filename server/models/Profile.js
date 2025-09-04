@@ -6,4 +6,7 @@ const ProfileSchema = new mongoose.Schema({
     profilePic: { type: String },
     bannerPic: { type: String },
     bio: { type: String, maxlength: 500 },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    createdAt: { type: Date, default: Date.now },
 });

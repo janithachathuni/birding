@@ -174,13 +174,13 @@ const Checklists = () => {
 
       <div className="flex-1 ml-[20%] mr-[30%]">
         {/* Sticky top section */}
-        <div className="bg-white z-10 border-b border-gray-200">
+        <div className="bg-white z-10 border-b border-gray-300">
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <p className="text-xl font-bold">Checklists</p>
               <button
                 onClick={() => setShowPopup(true)}
-                className="flex items-center gap-2 p-2 bg-[#506142] text-white rounded-full hover:bg-[#3a4a32] transition-colors"
+                className="flex items-center gap-2 p-2 bg-[#2b5b3f] text-white rounded-full hover:bg-[#3a4a32] transition-colors"
               >
                 <span className="w-6 h-6 flex items-center justify-center">+</span>
                 <span className="pr-2">Add New Checklist</span>
@@ -228,17 +228,17 @@ const Checklists = () => {
               currentChecklists.map((cl) => (
                 <div
                   key={cl.id}
-                  className="p-4 bg-[#f5f6f5] rounded-lg hover:bg-[#e5e9e5] transition-colors"
+                  className="pr-4 pl-4 pt-4 bg-[#eef7f1] rounded-lg hover:bg-[#f6f9f6] transition-colors"
                 >
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-lg  font-semibold text-black">
                     {cl.title}
                   </h3>
-                  <p className="text-gray-600 mt-1">{cl.tripPlace}</p>
+                  <p className="text-gray-900">{cl.tripPlace}</p>
                   <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm mb-4 text-gray-600">
                       Species Count: {cl.speciesCount}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                       Date: {cl.date}
                     </p>
                   </div>
@@ -262,7 +262,7 @@ const Checklists = () => {
                 className={`w-10 h-10 flex items-center justify-center rounded-full ${
                   currentPage === 1
                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-[#506142] text-white hover:bg-[#3a4a32]"
+                    : "bg-[#a0361b] text-white hover:bg-[#862b15]"
                 }`}
               >
                 ←
@@ -276,7 +276,7 @@ const Checklists = () => {
                 className={`w-10 h-10 flex items-center justify-center rounded-full ${
                   currentPage === totalPages
                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-[#506142] text-white hover:bg-[#3a4a32]"
+                    : "bg-[#a0361b] text-white hover:bg-[#862b15]"
                 }`}
               >
                 →

@@ -41,7 +41,7 @@ const navItems = [
       {/* Sidebar Header */}
       <div className="p-4 -mb-5">
         <NavLink to="/" className="flex justify-center">
-          <h2 className="text-2xl font-extrabold text-[#506142]">Kurullo</h2>
+          <h2 className="text-2xl font-extrabold text-[#143829]">Kurullo</h2>
         </NavLink>
       </div>
 
