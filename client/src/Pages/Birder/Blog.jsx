@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
 import EditProfile from "./EditProfile";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
 
 //images import
 import bannerimg from "../../assets/bannerimg.png";
 import profileimg from "../../assets/default_profile_pic.png";
 
 const Blog = () => {
+  const { username } = useParams(); // Get username from URL parameter
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [showMenu, setShowMenu] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [lightbox, setLightbox] = useState({ isOpen: false, postId: null });
@@ -18,58 +22,92 @@ const Blog = () => {
   const [newComment, setNewComment] = useState({});
   const [replyTo, setReplyTo] = useState({});
   const [newReply, setNewReply] = useState({});
-
   const [activeTab, setActiveTab] = useState("Posts");
 
-  //getting stuff from profile & user
+  // Profile and user state
   const [profile, setProfile] = useState(null);
-  const navigate = useNavigate();
-
-  //for edit profile
+  const [profileUser, setProfileUser] = useState(null); // User whose profile we're viewing
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [userExists, setUserExists] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  //useeffect for fetch profile data
+  // Get current logged-in user
   const userData = localStorage.getItem("user");
-  const user = userData ? JSON.parse(userData) : null; // ✅ Fixed: Uncommented and defined user
-  const userId = user?.id; // ✅ Fixed: Use optional chaining
+  const currentUser = userData ? JSON.parse(userData) : null;
+  const currentUserId = currentUser?.id;
 
-  useEffect(() => {
-    if (!userId) return;
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3001/api/profile/${userId}`
-        );
-        setProfile(response.data.profile);
-        localStorage.setItem("profile", JSON.stringify(response.data.profile));
+  // Determine if this is own profile or viewing someone else's
+  const isViewingOwnProfile = !username || (username && username === currentUser?.username);
+  const targetUsername = username || currentUser?.username;
 
-        // Debug logs
-        console.log("Profile user ID:", response.data.profile.user);
-        console.log("Current user ID:", userId);
-        console.log("Are they equal?", response.data.profile.user === userId);
-        console.log("Types:", typeof response.data.profile.user, typeof userId);
+  // Replace the existing useEffect with better error handling:
+// Blog.jsx
 
-        // Check if this is the user's own profile
-        const isOwn = String(response.data.profile.user) === String(userId);
-        console.log("Is own profile (string comparison):", isOwn);
-        setIsOwnProfile(isOwn);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
+// ... (keep all your existing imports and state variables)
+
+useEffect(() => {
+  const fetchUserAndProfile = async () => {
+    try {
+      setLoading(true);
+
+      // Don't try to fetch if username looks like an error route
+      if (username === '404' || username === 'error' || username === '*') {
+        setUserExists(false);
+        return;
       }
-    };
-    fetchProfile();
-  }, [userId]);
 
-  // ✅ Fixed: Add loading and error states
-  if (!user) return <p>Please log in to view your profile.</p>;
-  if (!profile) return <p>Loading profile...</p>;
+      // Determine the username to fetch
+      const targetUsername = username || currentUser?.username;
 
-  // Sample blog posts data
+      if (targetUsername) {
+        console.log(`Fetching user by username: ${targetUsername}`);
+        
+        // Make the API call
+        const userResponse = await axios.get(`http://localhost:3001/api/users/username/${targetUsername}`);
+        
+        // Correctly set the state with the data from the backend
+        setProfileUser(userResponse.data.user);
+        setProfile(userResponse.data.profile);
+        setIsOwnProfile(targetUsername === currentUser?.username);
+        setUserExists(true);
+      }
+    } catch (error) {
+      console.error("Error fetching user/profile:", error);
+      if (error.response && error.response.status === 404) {
+        // Handle the 404 case correctly
+        setUserExists(false);
+      } else {
+        // Handle other errors
+        console.error("An unexpected error occurred:", error);
+        setUserExists(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUserAndProfile();
+}, [username, currentUserId]);
+
+// ... (rest of the file remains the same)
+
+  // Redirect to 404 if user doesn't exist
+  useEffect(() => {
+    if (!loading && !userExists) {
+      navigate('/404', { replace: true });
+    }
+  }, [userExists, loading, navigate]);
+
+  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (!userExists) return null; // Will redirect to 404
+  if (!profileUser || !profile) return <div className="flex justify-center items-center min-h-screen">Profile not found</div>;
+
+  // Sample blog posts data - in a real app, fetch this based on the profile user
   const posts = [
     {
       id: 1,
-      username: "johndoe",
+      username: profileUser.username,
       profileimg: profileimg,
       date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       images: [
@@ -86,13 +124,12 @@ const Blog = () => {
           aspectRatio: "square",
         },
       ],
-      description:
-        "Here are some of the birds i saw in wilpattu national park.",
+      description: "Here are some of the birds i saw in wilpattu national park.",
       tags: ["Sri Lanka Jungle-fowl", "Little Egret", "Crested Serpent Eagle"],
     },
     {
       id: 2,
-      username: "johndoe",
+      username: profileUser.username,
       profileimg: profileimg,
       date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
       images: [
@@ -156,7 +193,7 @@ const Blog = () => {
         {
           id: Date.now(),
           text: newComment[postId],
-          user: "currentuser",
+          user: currentUser?.username || "currentuser",
           date: new Date(),
           likes: 0,
           replies: [],
@@ -182,7 +219,7 @@ const Blog = () => {
                   {
                     id: Date.now(),
                     text: newReply[`${postId}-${commentId}`],
-                    user: "currentuser",
+                    user: currentUser?.username || "currentuser",
                     date: new Date(),
                     likes: 0,
                   },
@@ -197,7 +234,8 @@ const Blog = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const url = username ? `${window.location.origin}/${username}` : window.location.href;
+    navigator.clipboard.writeText(url);
     setShowMenu(false);
     alert("Profile link copied to clipboard!");
   };
@@ -270,24 +308,28 @@ const Blog = () => {
                         >
                           Copy Link
                         </button>
-                        <button
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                          onClick={handleReport}
-                        >
-                          Report
-                        </button>
-                        <button
-                          className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
-                          onClick={handleBlock}
-                        >
-                          Block Account
-                        </button>
+                        {!isOwnProfile && (
+                          <>
+                            <button
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              onClick={handleReport}
+                            >
+                              Report
+                            </button>
+                            <button
+                              className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                              onClick={handleBlock}
+                            >
+                              Block Account
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Profile image - original position */}
+                {/* Profile image */}
                 <div className="absolute left-6 bottom-0 translate-y-1/2 group">
                   <div className="relative w-36 h-36">
                     {profile.profilePic ? (
@@ -305,14 +347,14 @@ const Blog = () => {
                 </div>
               </div>
 
-              {/* Profile details - original position */}
+              {/* Profile details */}
               <div className="px-6 mt-20">
                 {/* Name & Username */}
                 <div>
                   <p className="text-2xl font-bold text-black">
                     {profile.displayName}
                   </p>
-                  <p className="text-gray-500 text-sm">@{user.username}</p>
+                  <p className="text-gray-500 text-sm">@{profileUser.username}</p>
                 </div>
 
                 {/* Bio */}
@@ -321,7 +363,7 @@ const Blog = () => {
                 </p>
                 <br />
 
-                {/* Followers & Following - centered */}
+                {/* Followers & Following */}
                 <div className="flex justify-left gap-6 text-sm mb-2 text-gray-700">
                   <p>
                     <span className="font-semibold">
@@ -340,7 +382,7 @@ const Blog = () => {
             </div>
           </div>
 
-          {/* choosing for posts, articles and likes */}
+          {/* Tab selection */}
           <div className="flex justify-around border-b border-gray-200">
             {["Posts", "Articles", "Likes"].map((tab) => (
               <button
@@ -366,10 +408,10 @@ const Blog = () => {
               return (
                 <div
                   key={post.id}
-                  className="bg-[#f5f6f5] border  border-gray-200 rounded-lg overflow-hidden"
+                  className="bg-[#f5f6f5] border border-gray-200 rounded-lg overflow-hidden"
                 >
                   {/* Post Header */}
-                  <div className="flex items-center  justify-between p-4 border-b border-[#143829]">
+                  <div className="flex items-center justify-between p-4 border-b border-[#143829]">
                     <div className="flex items-center space-x-3">
                       {profile.profilePic ? (
                         <img
@@ -383,7 +425,7 @@ const Blog = () => {
                         />
                       )}
                       <span className="font-semibold text-[#143829]">
-                        {user.username}
+                        {profileUser.username}
                       </span>
                     </div>
                     <span className="text-sm text-[#2b5b3f]">
@@ -433,7 +475,7 @@ const Blog = () => {
                           {post.images.map((_, index) => (
                             <div
                               key={index}
-                              className={`w-1.5 h-1.5 rounded-full  ${
+                              className={`w-1.5 h-1.5 rounded-full ${
                                 index === currentImg
                                   ? "bg-white"
                                   : "bg-white/50"
@@ -525,36 +567,38 @@ const Blog = () => {
                   {/* Comments section */}
                   {showComments[post.id] && (
                     <div className="border-t-2 border-[#143829] bg-yellow-100">
-                      {/* Add comment */}
-                      <div className="p-4 border-b border-[#2b5b3f]">
-                        <div className="flex space-x-3">
-                          <img
-                            src={profileimg}
-                            alt="Your profile"
-                            className="w-8 h-8 rounded-full border border-[#2b5b3f]"
-                          />
-                          <div className="flex-1">
-                            <textarea
-                              value={newComment[post.id] || ""}
-                              onChange={(e) =>
-                                setNewComment((prev) => ({
-                                  ...prev,
-                                  [post.id]: e.target.value,
-                                }))
-                              }
-                              placeholder="Write a comment..."
-                              className="w-full p-2 border border-[#2b5b3f] rounded resize-none focus:outline-none focus:border-[#a0361b]"
-                              rows="2"
+                      {/* Add comment - only show if user is logged in */}
+                      {currentUser && (
+                        <div className="p-4 border-b border-[#2b5b3f]">
+                          <div className="flex space-x-3">
+                            <img
+                              src={profileimg}
+                              alt="Your profile"
+                              className="w-8 h-8 rounded-full border border-[#2b5b3f]"
                             />
-                            <button
-                              onClick={() => addComment(post.id)}
-                              className="mt-2 px-4 py-1 bg-[#143829] text-white rounded hover:bg-[#2b5b3f] transition text-sm"
-                            >
-                              Post
-                            </button>
+                            <div className="flex-1">
+                              <textarea
+                                value={newComment[post.id] || ""}
+                                onChange={(e) =>
+                                  setNewComment((prev) => ({
+                                    ...prev,
+                                    [post.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Write a comment..."
+                                className="w-full p-2 border border-[#2b5b3f] rounded resize-none focus:outline-none focus:border-[#a0361b]"
+                                rows="2"
+                              />
+                              <button
+                                onClick={() => addComment(post.id)}
+                                className="mt-2 px-4 py-1 bg-[#143829] text-white rounded hover:bg-[#2b5b3f] transition text-sm"
+                              >
+                                Post
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Comments list */}
                       <div className="max-h-96 overflow-y-auto">
@@ -586,21 +630,23 @@ const Blog = () => {
                               {comment.text}
                             </p>
 
-                            <button
-                              onClick={() =>
-                                setReplyTo((prev) => ({
-                                  ...prev,
-                                  [`${post.id}-${comment.id}`]:
-                                    !prev[`${post.id}-${comment.id}`],
-                                }))
-                              }
-                              className="text-[#2b5b3f] hover:text-[#a0361b] transition text-xs"
-                            >
-                              Reply
-                            </button>
+                            {currentUser && (
+                              <button
+                                onClick={() =>
+                                  setReplyTo((prev) => ({
+                                    ...prev,
+                                    [`${post.id}-${comment.id}`]:
+                                      !prev[`${post.id}-${comment.id}`],
+                                  }))
+                                }
+                                className="text-[#2b5b3f] hover:text-[#a0361b] transition text-xs"
+                              >
+                                Reply
+                              </button>
+                            )}
 
                             {/* Reply form */}
-                            {replyTo[`${post.id}-${comment.id}`] && (
+                            {currentUser && replyTo[`${post.id}-${comment.id}`] && (
                               <div className="mt-2 ml-4 flex space-x-2">
                                 <img
                                   src={profileimg}
@@ -729,10 +775,11 @@ const Blog = () => {
           )}
         </div>
       )}
-      {/* Edit Profile Modal */}
-      {showEditProfile && (
+
+      {/* Edit Profile Modal - only show if it's own profile */}
+      {showEditProfile && isOwnProfile && (
         <EditProfile
-          userId={userId}
+          userId={currentUserId}
           onClose={() => setShowEditProfile(false)}
           onSuccess={(updatedProfile) => {
             setProfile(updatedProfile);

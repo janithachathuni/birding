@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FiHome, 
   FiFileText, 
@@ -14,17 +14,33 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 const UserSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Use a useEffect hook to get the user from local storage once the component mounts
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.username) {
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+    }
+  }, []);
 
   const handleLogout = () => {
-    //clear all user data from local storage
     localStorage.removeItem('user');
-    //redirected to login page
     navigate('/login');
-  }
+  };
 
   const navItems = [
     { path: '/birder/dashboard', icon: <FiHome size={20} />, label: 'Dashboard' },
-    { path: '/birder/blog', icon: <FiFileText size={20} />, label: 'Blog' },
+    // Conditionally set the blog path based on the user's username
+    { 
+      path: currentUser ? `/${currentUser.username}` : '/birder/blog', 
+      icon: <FiFileText size={20} />, 
+      label: 'Blog' 
+    },
     { path: '/birder/checklists', icon: <FiCheckSquare size={20} />, label: 'Checklists' },
     { path: '/birder/trips', icon: <FiMap size={20} />, label: 'Trips' },
     { path: '/birder/notifications', icon: <FiBell size={20} />, label: 'Notifications' },
@@ -63,11 +79,11 @@ const UserSidebar = () => {
         </nav>
       </div>
 
-      {/* Logout*/}
+      {/* Logout */}
       <div className="p-4 border-t border-gray-300">
         <button 
-        onClick={handleLogout}
-        className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142] rounded-lg transition-colors">
+          onClick={handleLogout}
+          className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-[#f5f6f5] hover:text-[#506142] rounded-lg transition-colors">
           <FiLogOut size={20} className="mr-3" />
           <span className="font-medium">Logout</span>
         </button>

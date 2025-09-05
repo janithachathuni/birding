@@ -7,6 +7,7 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const birdRoutes = require('./routes/birdRoutes');
 const profileRoutes = require('./routes/profileRoutes'); // Uncommented
+const userRoutes = require('./routes/users');
 
 const app = express();
 
@@ -35,6 +36,7 @@ mongoose.connect('mongodb://localhost:27017/kurullo')
 app.use('/api/auth', authRoutes); 
 app.use('/api/birds', birdRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/users', userRoutes);
 
 // Default route
 app.get('/', (req, res) => {

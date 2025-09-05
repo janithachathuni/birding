@@ -81,12 +81,6 @@ const Router = createBrowserRouter([
         element: <Family />,
       },
 
-      //unauthorized, error 404s, forgot password pages
-      {
-        path: "*",
-        element: <Error404 />,
-      },
-
       {
         path: "/forgot-password-page1",
         element: <ForgotPassword1 />,
@@ -254,15 +248,6 @@ const Router = createBrowserRouter([
           },
 
           {
-            path: "blog",
-            element: (
-              <ProtectedRoute requiredRole="birder">
-                <BirderBlog />
-              </ProtectedRoute>
-            ),
-          },
-
-          {
             path: "notifications",
             element: (
               <ProtectedRoute requiredRole="birder">
@@ -281,6 +266,23 @@ const Router = createBrowserRouter([
             ),
           },
         ],
+      },
+
+      {
+        path: "/404", // Add explicit 404 route
+        element: <Error404 />,
+      },
+
+      // Dynamic username route - must be at the bottom to avoid conflicts
+      {
+        path: "/:username",
+        element: <BirderBlog />, // This will show the user's blog
+      },
+
+      //unauthorized, error 404s - this should be last
+      {
+        path: "*",
+        element: <Error404 />,
       },
     ],
   },
