@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
+import EditProfile from "./EditProfile";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 //images import
 import bannerimg from "../../assets/bannerimg.png";
-import profilepic from "../../assets/default_profile_pic.png";
+import profileimg from "../../assets/default_profile_pic.png";
 
 const Blog = () => {
   const [showMenu, setShowMenu] = useState(false);
@@ -20,12 +21,56 @@ const Blog = () => {
 
   const [activeTab, setActiveTab] = useState("Posts");
 
+  //getting stuff from profile & user
+  const [profile, setProfile] = useState(null);
+  const navigate = useNavigate();
+
+  //for edit profile
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+
+  //useeffect for fetch profile data
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null; // ✅ Fixed: Uncommented and defined user
+  const userId = user?.id; // ✅ Fixed: Use optional chaining
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3001/api/profile/${userId}`
+        );
+        setProfile(response.data.profile);
+        localStorage.setItem("profile", JSON.stringify(response.data.profile));
+
+        // Debug logs
+        console.log("Profile user ID:", response.data.profile.user);
+        console.log("Current user ID:", userId);
+        console.log("Are they equal?", response.data.profile.user === userId);
+        console.log("Types:", typeof response.data.profile.user, typeof userId);
+
+        // Check if this is the user's own profile
+        const isOwn = String(response.data.profile.user) === String(userId);
+        console.log("Is own profile (string comparison):", isOwn);
+        setIsOwnProfile(isOwn);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+    fetchProfile();
+  }, [userId]);
+
+  // ✅ Fixed: Add loading and error states
+  if (!user) return <p>Please log in to view your profile.</p>;
+  if (!profile) return <p>Loading profile...</p>;
+
   // Sample blog posts data
   const posts = [
     {
       id: 1,
       username: "johndoe",
-      profilePic: profilepic,
+      profileimg: profileimg,
       date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       images: [
         {
@@ -48,7 +93,7 @@ const Blog = () => {
     {
       id: 2,
       username: "johndoe",
-      profilePic: profilepic,
+      profileimg: profileimg,
       date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
       images: [
         {
@@ -60,8 +105,7 @@ const Blog = () => {
           aspectRatio: "landscape",
         },
       ],
-      description:
-        "Beautiful birds i saw on the way home in galle.",
+      description: "Beautiful birds i saw on the way home in galle.",
       tags: ["Crested Serpent Eagle", "Grey Heron"],
     },
   ];
@@ -184,17 +228,25 @@ const Blog = () => {
             <div className="overflow-hidden bg-white w-full">
               {/* Banner image with action buttons */}
               <div className="h-48 bg-gray-200 relative group">
-                <img
-                  src={bannerimg}
-                  alt="Banner"
-                  className="w-full h-full object-cover"
-                />
+                {profile.bannerPic ? (
+                  <img
+                    src={`http://localhost:3001/${profile.bannerPic}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img src={bannerimg} className="w-full h-full object-cover" />
+                )}
 
                 {/* Action buttons in top right corner */}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition text-sm">
-                    Edit Profile
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition text-sm"
+                      onClick={() => setShowEditProfile(true)}
+                    >
+                      Edit Profile
+                    </button>
+                  )}
                   <div className="relative">
                     <button
                       className="w-10 h-10 rounded-full bg-black flex items-center justify-center hover:bg-gray-800 transition"
@@ -238,11 +290,17 @@ const Blog = () => {
                 {/* Profile image - original position */}
                 <div className="absolute left-6 bottom-0 translate-y-1/2 group">
                   <div className="relative w-36 h-36">
-                    <img
-                      src={profilepic}
-                      alt="Profile"
-                      className="w-36 h-36 rounded-full border-4 border-white object-cover bg-white"
-                    />
+                    {profile.profilePic ? (
+                      <img
+                        src={`http://localhost:3001/${profile.profilePic}`}
+                        className="w-36 h-36 rounded-full border-4 border-white object-cover bg-white"
+                      />
+                    ) : (
+                      <img
+                        src={profileimg}
+                        className="w-36 h-36 rounded-full border-4 border-white object-cover bg-white"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -251,25 +309,31 @@ const Blog = () => {
               <div className="px-6 mt-20">
                 {/* Name & Username */}
                 <div>
-                  <p className="text-2xl font-bold text-black">John Doe</p>
-                  <p className="text-gray-500 text-sm">@johndoe</p>
+                  <p className="text-2xl font-bold text-black">
+                    {profile.displayName}
+                  </p>
+                  <p className="text-gray-500 text-sm">@{user.username}</p>
                 </div>
 
                 {/* Bio */}
                 <p className="mt-3 text-gray-800 text-sm leading-relaxed max-w-xl">
-                  bio details Lorem ipsum dolor sit amet consectetur adipisicing
-                  elit. Nobis illum gnissimos, illo vero hic magnam fuga tempora
-                  assumenda inventore!
+                  {profile.bio}
                 </p>
                 <br />
 
                 {/* Followers & Following - centered */}
                 <div className="flex justify-left gap-6 text-sm mb-2 text-gray-700">
                   <p>
-                    <span className="font-semibold">150</span> Followers
+                    <span className="font-semibold">
+                      {profile.followers ? profile.followers.length : 0}
+                    </span>{" "}
+                    Followers
                   </p>
                   <p>
-                    <span className="font-semibold">120</span> Following
+                    <span className="font-semibold">
+                      {profile.following ? profile.following.length : 0}
+                    </span>{" "}
+                    Following
                   </p>
                 </div>
               </div>
@@ -307,13 +371,19 @@ const Blog = () => {
                   {/* Post Header */}
                   <div className="flex items-center  justify-between p-4 border-b border-[#143829]">
                     <div className="flex items-center space-x-3">
-                      <img
-                        src={post.profilePic}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full  border-[#2b5b3f]"
-                      />
+                      {profile.profilePic ? (
+                        <img
+                          src={`http://localhost:3001/${profile.profilePic}`}
+                          className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
+                        />
+                      ) : (
+                        <img
+                          src={profileimg}
+                          className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
+                        />
+                      )}
                       <span className="font-semibold text-[#143829]">
-                        @{post.username}
+                        {user.username}
                       </span>
                     </div>
                     <span className="text-sm text-[#2b5b3f]">
@@ -342,7 +412,7 @@ const Blog = () => {
                             onClick={() =>
                               prevImage(post.id, post.images.length)
                             }
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
                           >
                             ‹
                           </button>
@@ -350,7 +420,7 @@ const Blog = () => {
                             onClick={() =>
                               nextImage(post.id, post.images.length)
                             }
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
                           >
                             ›
                           </button>
@@ -459,7 +529,7 @@ const Blog = () => {
                       <div className="p-4 border-b border-[#2b5b3f]">
                         <div className="flex space-x-3">
                           <img
-                            src={profilepic}
+                            src={profileimg}
                             alt="Your profile"
                             className="w-8 h-8 rounded-full border border-[#2b5b3f]"
                           />
@@ -496,7 +566,7 @@ const Blog = () => {
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex items-center space-x-2">
                                 <img
-                                  src={profilepic}
+                                  src={profileimg}
                                   alt="Commenter"
                                   className="w-6 h-6 rounded-full border border-[#2b5b3f]"
                                 />
@@ -533,14 +603,14 @@ const Blog = () => {
                             {replyTo[`${post.id}-${comment.id}`] && (
                               <div className="mt-2 ml-4 flex space-x-2">
                                 <img
-                                  src={profilepic}
+                                  src={profileimg}
                                   alt="Your profile"
                                   className="w-6 h-6 rounded-full border border-[#2b5b3f]"
                                 />
                                 <div className="flex-1">
                                   <input
                                     value={
-                                      newReply[`${postId}-${comment.id}`] || ""
+                                      newReply[`${post.id}-${comment.id}`] || ""
                                     }
                                     onChange={(e) =>
                                       setNewReply((prev) => ({
@@ -573,7 +643,7 @@ const Blog = () => {
                                 <div className="flex justify-between items-start mb-1">
                                   <div className="flex items-center space-x-2">
                                     <img
-                                      src={profilepic}
+                                      src={profileimg}
                                       alt="Replier"
                                       className="w-5 h-5 rounded-full border border-[#2b5b3f]"
                                     />
@@ -658,6 +728,18 @@ const Blog = () => {
             </>
           )}
         </div>
+      )}
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <EditProfile
+          userId={userId}
+          onClose={() => setShowEditProfile(false)}
+          onSuccess={(updatedProfile) => {
+            setProfile(updatedProfile);
+            localStorage.setItem("profile", JSON.stringify(updatedProfile));
+            setShowEditProfile(false);
+          }}
+        />
       )}
     </div>
   );

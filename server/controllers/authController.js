@@ -12,6 +12,13 @@ exports.register = async (req, res) => {
       console.log("Missing required fields");
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    // ✅ Username validation (letters, numbers, dash only)
+    const usernameRegex = /^[A-Za-z0-9-]+$/;
+    if (!usernameRegex.test(username)) {
+      console.log("Invalid username format:", username);
+      return res.status(400).json({ message: "Username can only contain letters, numbers, and dashes" });
+    }
     
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -40,9 +47,9 @@ exports.register = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        moderator: user.moderator, // Include moderator in response
-        isFirstLogin: user.isFirstLogin, // Added this line
-        profileCompleted: user.profileCompleted // Added this line
+        moderator: user.moderator,
+        isFirstLogin: user.isFirstLogin,
+        profileCompleted: user.profileCompleted
       }
     });
   } catch (error) {
@@ -54,7 +61,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login controller
+// Login controller (unchanged)
 exports.login = async (req, res) => {
   try {
     console.log("Login request received:", req.body);
@@ -86,9 +93,9 @@ exports.login = async (req, res) => {
         email: user.email,
         username: user.username,
         role: user.role,
-        moderator: user.moderator, // Include moderator in response
-        isFirstLogin: user.isFirstLogin, // Added this line
-        profileCompleted: user.profileCompleted // Added this line
+        moderator: user.moderator,
+        isFirstLogin: user.isFirstLogin,
+        profileCompleted: user.profileCompleted
       }
     });
   } catch (error) {
