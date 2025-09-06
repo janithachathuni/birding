@@ -13,7 +13,6 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Username validation (letters, numbers, dash only)
     const usernameRegex = /^[A-Za-z0-9-]+$/;
     if (!usernameRegex.test(username)) {
       console.log("Invalid username format:", username);
@@ -32,7 +31,7 @@ exports.register = async (req, res) => {
       username, 
       email, 
       password,
-      moderator: moderator || false,  // Explicitly set moderator field
+      moderator: moderator || false,  //  set moderator field
       isFirstLogin: true,
       profileCompleted: false
     });

@@ -160,7 +160,7 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
       <div className="relative bg-white rounded-2xl p-4 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Edit Profile</h2>
+          <h2 className=""></h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-xl font-bold"

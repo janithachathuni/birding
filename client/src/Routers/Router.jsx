@@ -10,6 +10,10 @@ import SignUp from "../Pages/SignUp";
 import ForgotPassword1 from "../Pages/ForgotPassword1";
 import ForgotPassword2 from "../Pages/ForgotPassword2";
 
+//temporary
+import Basee from "../Pages/Birder/Base";
+import Posts from "../Pages/Birder/Posts";
+
 //general pages
 import SingleBird from "../Pages/SingleBird";
 import AllBirds from "../Pages/AllBirds";
@@ -99,6 +103,16 @@ const Router = createBrowserRouter([
       {
         path: "/create-post",
         element: <BirderCreatePost />,
+      },
+
+      {
+        path: "/base",
+        element: <Basee />,
+      },
+
+      {
+        path: "/posts",
+        element: <Posts />,
       },
 
       //admin routes
