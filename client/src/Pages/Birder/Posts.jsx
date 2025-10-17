@@ -198,6 +198,7 @@ const Posts = () => {
                     </span>
                   </div>
 
+
                   {/* Image Container */}
                   <div className="relative bg-[#143829]">
                     <div className="relative w-full">

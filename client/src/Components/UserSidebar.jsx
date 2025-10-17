@@ -7,7 +7,8 @@ import {
   FiBell,
   FiMessageSquare,
   FiSettings,
-  FiLogOut
+  FiLogOut,
+  FiPlus
 } from 'react-icons/fi';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
@@ -77,6 +78,17 @@ const UserSidebar = () => {
             </NavLink>
           ))}
         </nav>
+      </div>
+
+      {/* Create Post Button */}
+      <div className="p-4">
+        <button
+          onClick={() => navigate('/create-post')}
+          className="flex items-center justify-center w-full px-4 py-3 bg-[#143829] text-white hover:text-[#143829] rounded-lg hover:bg-[white] hover:border-1 hover:border-[#143829] transition-colors"
+        >
+          <FiPlus size={20} className="mr-2" />
+          <span className="font-medium">Create Post</span>
+        </button>
       </div>
 
       {/* Logout */}

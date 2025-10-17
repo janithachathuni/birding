@@ -1,0 +1,31 @@
+User table
+    username
+    email
+    password
+    role
+    moderator
+    isFirstLogin
+    profileCompleted
+    status
+    createdAt
+
+
+Bird table
+    primaryName
+    otherNames
+    scientificName
+    order
+    family
+    description
+    sinhalaName
+    tamilName
+    image
+    habitatMap
+    frequency
+    residency
+    endemic
+    places
+    createdAt
+    updatedAt
+
+
