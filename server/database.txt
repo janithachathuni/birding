@@ -28,4 +28,20 @@ Bird table
     createdAt
     updatedAt
 
+Profile table
+    user (objectid)
+    displayName
+    profilePic
+    bannerPic
+    bio
+    followers
+    following
+    blocked
 
+
+Trip table
+Checklist table
+Post table
+Article table
+Discussion table
+Comment table
