@@ -2,7 +2,16 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { createProfile, editProfile, checkFirstLogin, completeSetup, getProfile } = require('../controllers/profileController');
+const { 
+    createProfile, 
+    editProfile, 
+    checkFirstLogin, 
+    completeSetup, 
+    getProfile,
+    followUser,
+    unfollowUser,
+    checkFollowStatus
+} = require('../controllers/profileController');
 const router = express.Router();
 
 // Ensure upload directory exists
@@ -41,7 +50,7 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 8 * 1024 * 1024 // 8MB limit (increased from 5MB)
+        fileSize: 8 * 1024 * 1024 // 8MB limit
     }
 });
 
@@ -74,7 +83,7 @@ const uploadMiddleware = upload.fields([
     { name: 'bannerPic', maxCount: 1 }
 ]);
 
-// Routes
+// Profile CRUD Routes
 router.post('/create', (req, res, next) => {
     console.log("=== PROFILE CREATE ROUTE HIT ===");
     console.log("Headers:", req.headers);
@@ -89,7 +98,6 @@ router.post('/create', (req, res, next) => {
         console.log("Files processed by multer:", req.files);
         console.log("Body after multer:", req.body);
         
-        // Call the controller
         createProfile(req, res);
     });
 });
@@ -109,7 +117,6 @@ router.put('/edit/:userId', (req, res, next) => {
         console.log("Files processed by multer:", req.files);
         console.log("Body after multer:", req.body);
         
-        // Call the controller
         editProfile(req, res);
     });
 });
@@ -128,5 +135,10 @@ router.get('/:userId', (req, res) => {
     console.log(`Getting profile for user: ${req.params.userId}`);
     getProfile(req, res);
 });
+
+// Follow/Unfollow Routes
+router.post('/follow/:userId', followUser);
+router.post('/unfollow/:userId', unfollowUser);
+router.get('/follow-status/:userId', checkFollowStatus);
 
 module.exports = router;

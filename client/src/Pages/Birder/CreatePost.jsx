@@ -89,33 +89,33 @@ const CreatePost = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black flex items-start justify-center z-50 pt-8 px-4">
-      <div className="relative bg-white border-4 border-black w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 pt-8 px-4">
+      <div className="relative bg-[#F5F6F5] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b-4 border-black bg-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-300">
           <button
             onClick={handleDiscard}
-            className="border-2 border-black bg-white hover:bg-black hover:text-white p-2"
+            className="text-gray-600 hover:text-gray-900 p-2"
           >
-            <FaTimes size={18} />
+            <FaTimes size={20} />
           </button>
 
           <button
             onClick={handleCreatePost}
             disabled={photos.length === 0}
-            className="border-2 border-black bg-black text-white px-6 py-2 text-sm font-bold disabled:bg-gray-400 disabled:border-gray-400"
+            className="bg-[#143829] hover:bg-[#143829] text-white px-8 py-2 rounded-full text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            SHARE POST
+            Post
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 bg-[#F5F6F5] rounded-b-2xl">
           {/* Photo Upload */}
-          <div className="mb-6 border-2 border-black p-4">
-            <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-3 border-2 border-black">
-              <FaCamera size={20} />
-              <span className="text-md font-bold">ADD PHOTOS</span>
+          <div className="mb-4 bg-white rounded-xl p-4">
+            <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1 rounded-lg transition-colors">
+              <FaCamera size={22} className="text-gray-700" />
+              <span className="text-md font-normal text-gray-900">Add Photos</span>
               <input
                 type="file"
                 accept="image/*"
@@ -127,135 +127,104 @@ const CreatePost = ({ onComplete }) => {
             </label>
 
             {photos.length > 0 && (
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between border-b-2 border-black pb-2">
-                  <h3 className="text-lg font-bold">
-                    PHOTOS ({photos.length}/7)
-                  </h3>
-                  {photos.length < 7 && (
-                    <label className="text-sm font-bold cursor-pointer underline">
-                      + ADD MORE
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handlePhotoChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-
+              <div className="mt-6 space-y-6">
                 {/* Photo list */}
-                <div className="space-y-6">
-                  {photos.map((photo, index) => (
-                    <div
-                      key={photo.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, index)}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, index)}
-                      className={`border-4 border-black bg-white cursor-grab active:cursor-grabbing ${
-                        draggedIndex === index ? "opacity-50" : ""
-                      }`}
-                    >
-                      {/* Photo Header */}
-                      <div className="flex items-center justify-between p-3 border-b-4 border-black bg-gray-100">
-                        <span className="font-bold">PHOTO #{index + 1}</span>
+                {photos.map((photo, index) => (
+                  <div
+                    key={photo.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`cursor-grab active:cursor-grabbing ${
+                      draggedIndex === index ? "opacity-50" : ""
+                    }`}
+                  >
+                    {/* Image with close button */}
+                    <div className="relative rounded-lg overflow-hidden mb-3">
+                      <img
+                        src={photo.url}
+                        alt={`Bird photo ${index + 1}`}
+                        className="w-full h-80 object-cover"
+                      />
+                      <button
+                        onClick={() => removePhoto(photo.id)}
+                        className="absolute top-3 right-3 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg"
+                      >
+                        <FaTimes size={14} />
+                      </button>
+                    </div>
+
+                    {/* Tags Section */}
+                    <div className="space-y-3">
+                      {photo.tags.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {photo.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="bg-green-100 text-green-800 px-3 py-1 text-sm rounded-full flex items-center gap-2"
+                            >
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => removeTagFromPhoto(photo.id, tag)}
+                                className="hover:text-red-600 font-medium"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={tagInputs[photo.id] || ""}
+                          onChange={(e) =>
+                            setTagInputs((prev) => ({
+                              ...prev,
+                              [photo.id]: e.target.value
+                            }))
+                          }
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addTagToPhoto(photo.id);
+                            }
+                          }}
+                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#143829] focus:border-transparent"
+                          placeholder="Add bird species tag..."
+                        />
                         <button
-                          onClick={() => removePhoto(photo.id)}
-                          className="border-2 border-black bg-white hover:bg-red-500 hover:text-white hover:border-red-500 px-3 py-1 font-bold"
+                          onClick={() => addTagToPhoto(photo.id)}
+                          className="bg-[#143829] hover:bg-[#0f2a1f] text-white px-4 py-2 text-sm font-medium rounded-lg"
                         >
-                          REMOVE
+                          Add
                         </button>
                       </div>
-
-                      <div className="p-4">
-                        {/* Image */}
-                        <div className="border-4 border-black mb-4">
-                          <img
-                            src={photo.url}
-                            alt={`Bird photo ${index + 1}`}
-                            className="w-full h-64 object-contain bg-gray-50"
-                          />
-                        </div>
-
-                        {/* Tags Section */}
-                        <div className="border-2 border-black p-3 bg-gray-50">
-                          <label className="block mb-2 text-xs font-bold">
-                            BIRD SPECIES TAGS
-                          </label>
-
-                          {photo.tags.length > 0 && (
-                            <div className="flex gap-2 mb-3 flex-wrap">
-                              {photo.tags.map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="bg-black text-white px-3 py-1 text-sm flex items-center gap-2 border-2 border-black"
-                                >
-                                  {tag}
-                                  <button
-                                    type="button"
-                                    onClick={() => removeTagFromPhoto(photo.id, tag)}
-                                    className="hover:text-red-400 font-bold"
-                                  >
-                                    ×
-                                  </button>
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={tagInputs[photo.id] || ""}
-                              onChange={(e) =>
-                                setTagInputs((prev) => ({
-                                  ...prev,
-                                  [photo.id]: e.target.value
-                                }))
-                              }
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  addTagToPhoto(photo.id);
-                                }
-                              }}
-                              className="flex-1 border-2 border-black px-3 py-2 text-sm focus:outline-none focus:border-4"
-                              placeholder="e.g., Sri Lankan Magpie"
-                            />
-                            <button
-                              onClick={() => addTagToPhoto(photo.id)}
-                              className="border-2 border-black bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-800"
-                            >
-                              ADD
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
           {/* Description */}
-          <div className="border-2 border-black p-4">
-            <label className="block mb-3 text-xs font-bold">
-              DESCRIPTION (OPTIONAL)
+          <div className="bg-white rounded-xl p-4">
+            <label className="block mb-3 text-xs font-medium text-gray-700">
+              Description (Optional)
             </label>
             <textarea
               value={description}
               onChange={(e) =>
                 e.target.value.length <= 800 && setDescription(e.target.value)
               }
-              className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:border-4 resize-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
               rows={4}
               placeholder="Share details about your birding experience..."
             />
-            <div className="text-xs mt-2 text-right font-bold">
+            <div className="text-xs mt-2 text-right text-gray-500">
               {description.length}/800
             </div>
           </div>
@@ -264,12 +233,12 @@ const CreatePost = ({ onComplete }) => {
 
       {/* Discard Confirmation */}
       {showDiscardConfirm && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-[60]">
-          <div className="bg-white border-4 border-white p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-bold mb-2 border-b-2 border-black pb-2">
-              SAVE PROGRESS?
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              Save Progress?
             </h3>
-            <p className="text-sm mb-6">
+            <p className="text-sm text-gray-600 mb-6">
               Save as draft or discard completely.
             </p>
             <div className="flex flex-col gap-3">
@@ -279,24 +248,24 @@ const CreatePost = ({ onComplete }) => {
                   setShowDiscardConfirm(false);
                   onComplete?.();
                 }}
-                className="border-2 border-black bg-black text-white py-3 font-bold hover:bg-gray-800"
+                className="bg-green-800 hover:bg-green-900 text-white py-3 rounded-full font-medium"
               >
-                SAVE AS DRAFT
+                Save as Draft
               </button>
               <button
                 onClick={() => {
                   setShowDiscardConfirm(false);
                   onComplete?.();
                 }}
-                className="border-2 border-black bg-white text-black py-3 font-bold hover:bg-gray-100"
+                className="border border-gray-300 bg-white text-gray-900 py-3 rounded-full font-medium hover:bg-gray-50"
               >
-                DISCARD POST
+                Discard Post
               </button>
               <button
                 onClick={() => setShowDiscardConfirm(false)}
-                className="border-2 border-black bg-gray-100 text-black py-3 font-bold hover:bg-gray-200"
+                className="bg-gray-100 text-gray-900 py-3 rounded-full font-medium hover:bg-gray-200"
               >
-                KEEP EDITING
+                Keep Editing
               </button>
             </div>
           </div>

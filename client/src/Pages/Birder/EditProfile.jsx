@@ -33,7 +33,7 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
           return;
         }
 
-        const response = await fetch(`http://localhost:3001/api/profile/${userData.id}`);
+        const response = await fetch(`http://localhost:3001/api/profiles/${userData.id}`);
         
         if (response.ok) {
           const data = await response.json();
@@ -46,14 +46,10 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
             bannerPic: null,
           });
 
+          // Store the raw paths from database (e.g., "uploads/profiles/...")
           setCurrentImages({
-            profilePic: profile.profilePic ? `http://localhost:3001/${profile.profilePic}` : null,
-            bannerPic: profile.bannerPic ? `http://localhost:3001/${profile.bannerPic}` : null,
-          });
-
-          setPreviewUrls({
-            profilePic: profile.profilePic ? `http://localhost:3001/${profile.profilePic}` : null,
-            bannerPic: profile.bannerPic ? `http://localhost:3001/${profile.bannerPic}` : null,
+            profilePic: profile.profilePic || null,
+            bannerPic: profile.bannerPic || null,
           });
 
         } else if (response.status === 404) {
@@ -123,7 +119,7 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
         profileFormData.append("bannerPic", formData.bannerPic);
       }
 
-      const response = await fetch(`http://localhost:3001/api/profile/edit/${userData.id}`, {
+      const response = await fetch(`http://localhost:3001/api/profiles/edit/${userData.id}`, {
         method: "PUT",
         body: profileFormData,
       });
@@ -143,6 +139,34 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get banner image - matches Blog.jsx pattern
+  const getBannerImage = () => {
+    // 1. If user just selected a new image, show the preview
+    if (previewUrls.bannerPic) {
+      return previewUrls.bannerPic;
+    }
+    // 2. If there's an existing image from database, show it with server URL
+    if (currentImages.bannerPic) {
+      return `http://localhost:3001/${currentImages.bannerPic}`;
+    }
+    // 3. Otherwise show default
+    return bannerimg;
+  };
+
+  // Helper function to get profile image - matches Blog.jsx pattern
+  const getProfileImage = () => {
+    // 1. If user just selected a new image, show the preview
+    if (previewUrls.profilePic) {
+      return previewUrls.profilePic;
+    }
+    // 2. If there's an existing image from database, show it with server URL
+    if (currentImages.profilePic) {
+      return `http://localhost:3001/${currentImages.profilePic}`;
+    }
+    // 3. Otherwise show default
+    return profileimg;
   };
 
   if (initialLoading) {
@@ -179,11 +203,7 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
               {/* Banner image */}
               <div className="h-48 bg-gray-200 relative group">
                 <img
-                  src={
-                    previewUrls.bannerPic ||
-                    currentImages.bannerPic ||
-                    bannerimg
-                  }
+                  src={getBannerImage()}
                   alt="Banner"
                   className="w-full h-full object-cover"
                 />
@@ -205,11 +225,7 @@ const EditProfile = ({ userId, onClose, onSuccess }) => {
                 <div className="absolute left-6 bottom-0 translate-y-1/2 group">
                   <div className="relative w-36 h-36">
                     <img
-                      src={
-                        previewUrls.profilePic ||
-                        currentImages.profilePic ||
-                        profileimg
-                      }
+                      src={getProfileImage()}
                       alt="Profile"
                       className="w-36 h-36 rounded-full border-4 border-white object-cover bg-white"
                     />

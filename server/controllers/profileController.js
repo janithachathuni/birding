@@ -2,6 +2,7 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
 module.exports = {
     createProfile: async (req, res) => {
@@ -60,7 +61,10 @@ module.exports = {
                 displayName: displayName || 'Anonymous Birder',
                 bio: bio || '',
                 profilePic,
-                bannerPic
+                bannerPic,
+                followers: [],
+                following: [],
+                blocked: []
             };
             
             console.log("Profile data to save:", profileData);
@@ -90,7 +94,9 @@ module.exports = {
                     displayName: savedProfile.displayName,
                     bio: savedProfile.bio,
                     profilePic: savedProfile.profilePic,
-                    bannerPic: savedProfile.bannerPic
+                    bannerPic: savedProfile.bannerPic,
+                    followers: savedProfile.followers,
+                    following: savedProfile.following
                 }
             };
             
@@ -230,7 +236,9 @@ module.exports = {
                     displayName: updatedProfile.displayName,
                     bio: updatedProfile.bio,
                     profilePic: updatedProfile.profilePic,
-                    bannerPic: updatedProfile.bannerPic
+                    bannerPic: updatedProfile.bannerPic,
+                    followers: updatedProfile.followers,
+                    following: updatedProfile.following
                 }
             };
 
@@ -308,7 +316,10 @@ module.exports = {
                     displayName: user.username || 'Anonymous Birder',
                     bio: '',
                     profilePic: null,
-                    bannerPic: null
+                    bannerPic: null,
+                    followers: [],
+                    following: [],
+                    blocked: []
                 });
                 await profile.save();
             }
@@ -343,6 +354,156 @@ module.exports = {
         } catch (error) {
             console.error("Error fetching profile:", error);
             res.status(500).json({ message: "Server error" });
+        }
+    },
+
+    // Follow a user
+    followUser: async (req, res) => {
+        try {
+            const { userId } = req.params; // User to follow
+            const currentUserId = req.body.currentUserId; // Logged in user
+
+            console.log("Follow request - Current user:", currentUserId, "Target user:", userId);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: "Current user ID is required" });
+            }
+
+            if (currentUserId === userId) {
+                return res.status(400).json({ message: "You cannot follow yourself" });
+            }
+
+            // Get both profiles
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            const targetUserProfile = await Profile.findOne({ user: userId });
+
+            if (!currentUserProfile || !targetUserProfile) {
+                return res.status(404).json({ message: "Profile not found" });
+            }
+
+            // Convert to ObjectId for proper comparison
+            const targetUserObjectId = new mongoose.Types.ObjectId(userId);
+            const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
+
+            // Check if already following
+            const alreadyFollowing = currentUserProfile.following.some(
+                id => id.toString() === userId
+            );
+
+            if (alreadyFollowing) {
+                return res.status(400).json({ message: "Already following this user" });
+            }
+
+            // Add to following list of current user
+            currentUserProfile.following.push(targetUserObjectId);
+            await currentUserProfile.save();
+
+            // Add to followers list of target user
+            targetUserProfile.followers.push(currentUserObjectId);
+            await targetUserProfile.save();
+
+            console.log("Follow successful");
+
+            res.status(200).json({ 
+                message: "Successfully followed user",
+                following: currentUserProfile.following,
+                followers: targetUserProfile.followers
+            });
+
+        } catch (error) {
+            console.error("Follow error:", error);
+            res.status(500).json({ message: "Server error", error: error.message });
+        }
+    },
+
+    // Unfollow a user
+    unfollowUser: async (req, res) => {
+        try {
+            const { userId } = req.params; // User to unfollow
+            const currentUserId = req.body.currentUserId; // Logged in user
+
+            console.log("Unfollow request - Current user:", currentUserId, "Target user:", userId);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: "Current user ID is required" });
+            }
+
+            if (currentUserId === userId) {
+                return res.status(400).json({ message: "You cannot unfollow yourself" });
+            }
+
+            // Get both profiles
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            const targetUserProfile = await Profile.findOne({ user: userId });
+
+            if (!currentUserProfile || !targetUserProfile) {
+                return res.status(404).json({ message: "Profile not found" });
+            }
+
+            // Check if not following
+            const isFollowing = currentUserProfile.following.some(
+                id => id.toString() === userId
+            );
+
+            if (!isFollowing) {
+                return res.status(400).json({ message: "Not following this user" });
+            }
+
+            // Remove from following list of current user
+            currentUserProfile.following = currentUserProfile.following.filter(
+                id => id.toString() !== userId
+            );
+            await currentUserProfile.save();
+
+            // Remove from followers list of target user
+            targetUserProfile.followers = targetUserProfile.followers.filter(
+                id => id.toString() !== currentUserId
+            );
+            await targetUserProfile.save();
+
+            console.log("Unfollow successful");
+
+            res.status(200).json({ 
+                message: "Successfully unfollowed user",
+                following: currentUserProfile.following,
+                followers: targetUserProfile.followers
+            });
+
+        } catch (error) {
+            console.error("Unfollow error:", error);
+            res.status(500).json({ message: "Server error", error: error.message });
+        }
+    },
+
+    // Check if current user is following target user
+    checkFollowStatus: async (req, res) => {
+        try {
+            const { userId } = req.params; // Target user
+            const { currentUserId } = req.query; // Logged in user
+
+            console.log("Check follow status - Current user:", currentUserId, "Target user:", userId);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: "Current user ID is required" });
+            }
+
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            
+            if (!currentUserProfile) {
+                return res.status(404).json({ message: "Profile not found" });
+            }
+
+            const isFollowing = currentUserProfile.following.some(
+                id => id.toString() === userId
+            );
+
+            console.log("Is following:", isFollowing);
+
+            res.status(200).json({ isFollowing });
+
+        } catch (error) {
+            console.error("Check follow status error:", error);
+            res.status(500).json({ message: "Server error", error: error.message });
         }
     }
 };

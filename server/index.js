@@ -2,11 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const multer = require('multer');
 
 //route imports
 const authRoutes = require('./routes/authRoutes');
 const birdRoutes = require('./routes/birdRoutes');
-const profileRoutes = require('./routes/profileRoutes'); // Uncommented
+const profileRoutes = require('./routes/profileRoutes');
 const userRoutes = require('./routes/users');
 
 const app = express();
@@ -32,10 +33,10 @@ mongoose.connect('mongodb://localhost:27017/kurullo')
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB connection error:", err));
 
-// Routes
+// Routes - FIXED: Changed /api/profile to /api/profiles to match frontend
 app.use('/api/auth', authRoutes); 
 app.use('/api/birds', birdRoutes);
-app.use('/api/profile', profileRoutes);
+app.use('/api/profiles', profileRoutes); // FIXED: was /api/profile, now /api/profiles
 app.use('/api/users', userRoutes);
 
 // Default route

@@ -13,7 +13,7 @@ import profileimg from "../../assets/default_profile_pic.png";
 import Posts from "./Posts"
 
 const Blog = () => {
-  const { username } = useParams(); // Get username from URL parameter
+  const { username } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,21 +22,20 @@ const Blog = () => {
 
   // Profile and user state
   const [profile, setProfile] = useState(null);
-  const [profileUser, setProfileUser] = useState(null); // User whose profile we're viewing
+  const [profileUser, setProfileUser] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [userExists, setUserExists] = useState(true);
   const [loading, setLoading] = useState(true);
+  
+  // Follow state
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   // Get current logged-in user
   const userData = localStorage.getItem("user");
   const currentUser = userData ? JSON.parse(userData) : null;
   const currentUserId = currentUser?.id;
-
-  // Determine if this is own profile or viewing someone else's
-  const isViewingOwnProfile =
-    !username || (username && username === currentUser?.username);
-  const targetUsername = username || currentUser?.username;
 
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
@@ -46,36 +45,45 @@ const Blog = () => {
       try {
         setLoading(true);
 
-        // Don't try to fetch if username looks like an error route
         if (username === "404" || username === "error" || username === "*") {
           setUserExists(false);
           return;
         }
 
-        // Determine the username to fetch
         const targetUsername = username || currentUser?.username;
 
         if (targetUsername) {
           console.log(`Fetching user by username: ${targetUsername}`);
 
-          // Make the API call
           const userResponse = await axios.get(
             `http://localhost:3001/api/users/username/${targetUsername}`
           );
 
-          // Correctly set the state with the data from the backend
           setProfileUser(userResponse.data.user);
           setProfile(userResponse.data.profile);
           setIsOwnProfile(targetUsername === currentUser?.username);
           setUserExists(true);
+
+          // Check follow status if viewing someone else's profile
+          if (targetUsername !== currentUser?.username && currentUserId) {
+            try {
+              const followStatusResponse = await axios.get(
+                `http://localhost:3001/api/profiles/follow-status/${userResponse.data.user._id}`,
+                {
+                  params: { currentUserId }
+                }
+              );
+              setIsFollowing(followStatusResponse.data.isFollowing);
+            } catch (error) {
+              console.error("Error checking follow status:", error);
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching user/profile:", error);
         if (error.response && error.response.status === 404) {
-          // Handle the 404 case correctly
           setUserExists(false);
         } else {
-          // Handle other errors
           console.error("An unexpected error occurred:", error);
           setUserExists(false);
         }
@@ -87,12 +95,42 @@ const Blog = () => {
     fetchUserAndProfile();
   }, [username, currentUserId]);
 
-  // Redirect to 404 if user doesn't exist
   useEffect(() => {
     if (!loading && !userExists) {
       navigate("/404", { replace: true });
     }
   }, [userExists, loading, navigate]);
+
+  const handleFollowToggle = async () => {
+    if (!currentUserId) {
+      alert("Please login to follow users");
+      return;
+    }
+
+    setFollowLoading(true);
+    try {
+      const endpoint = isFollowing ? 'unfollow' : 'follow';
+      const response = await axios.post(
+        `http://localhost:3001/api/profiles/${endpoint}/${profileUser._id}`,
+        { currentUserId }
+      );
+
+      setIsFollowing(!isFollowing);
+      
+      // Update follower count in profile
+      setProfile(prevProfile => ({
+        ...prevProfile,
+        followers: response.data.followers
+      }));
+
+      console.log(`${isFollowing ? 'Unfollowed' : 'Followed'} successfully`);
+    } catch (error) {
+      console.error("Follow/Unfollow error:", error);
+      alert(error.response?.data?.message || "An error occurred");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   if (loading)
     return (
@@ -100,7 +138,7 @@ const Blog = () => {
         Loading...
       </div>
     );
-  if (!userExists) return null; // Will redirect to 404
+  if (!userExists) return null;
   if (!profileUser || !profile)
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -129,7 +167,6 @@ const Blog = () => {
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* show sidebar only when logged in */}
       {user && <UserSidebar />}
 
       <div className="flex flex-1 ml-[20%] mr-[30%]">
@@ -150,12 +187,24 @@ const Blog = () => {
 
                 {/* Action buttons in top right corner */}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  {isOwnProfile && (
+                  {isOwnProfile ? (
                     <button
                       className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition text-sm"
                       onClick={() => setShowEditProfile(true)}
                     >
                       Edit Profile
+                    </button>
+                  ) : (
+                    <button
+                      className={`px-4 py-2 rounded-full transition text-sm font-medium ${
+                        isFollowing
+                          ? "bg-gray-200 text-black hover:bg-gray-300"
+                          : "bg-black text-white hover:bg-gray-800"
+                      }`}
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                    >
+                      {followLoading ? "Loading..." : isFollowing ? "Following" : "Follow"}
                     </button>
                   )}
                   <div className="relative">
@@ -274,7 +323,7 @@ const Blog = () => {
             ))}
           </div>
 
-          {/* Content area - now empty, can be populated based on activeTab */}
+          {/* Content area */}
           <div className="">
             {activeTab === "Posts" && (
               <Posts/>
