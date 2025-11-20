@@ -1,123 +1,112 @@
 import React, { useState, useEffect } from "react";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
+import { Trash2, Calendar, MapPin } from "lucide-react";
+import {Link} from "react-router-dom";
 
-const mockChecklists = [
-  {
-    id: 1,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-  {
-    id: 2,
-    title: "Wetland Observation",
-    tripPlace: "Jaffna Lagoon",
-    speciesCount: 8,
-    date: "2024-07-05",
-  },
-  {
-    id: 3,
-    title: "Mammals at Dawn",
-    tripPlace: "Wilpattu National Park",
-    speciesCount: 5,
-    date: "2024-08-01",
-  },
-  {
-    id: 4,
-    title: "Butterfly Walk",
-    tripPlace: "Sinharaja Forest Reserve",
-    speciesCount: 20,
-    date: "2024-06-20",
-  },
-
-  {
-    id: 5,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 6,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 7,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 8,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 9,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 10,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-
-  {
-    id: 11,
-    title: "Morning Bird Survey",
-    tripPlace: "Thalangama Wetland",
-    speciesCount: 12,
-    date: "2024-07-10",
-  },
-];
+const API_BASE_URL = 'http://localhost:3001/api';
 
 const Checklists = () => {
+  const [checklists, setChecklists] = useState([]);
+  const [trips, setTrips] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPlace, setFilterPlace] = useState("all");
   const [filterDate, setFilterDate] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [checklistToDelete, setChecklistToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPlace, setSelectedPlace] = useState("");
+  const [selectedTrip, setSelectedTrip] = useState("");
   const [checklistTitle, setChecklistTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [savingChecklist, setSavingChecklist] = useState(false);
   
   const checklistsPerPage = 8;
 
-  // get unique places for dropdown
-  const uniquePlaces = ["all", ...new Set(mockChecklists.map((c) => c.tripPlace))];
+  // Get userId
+  const getUserId = () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.id || user._id;
+    }
+    return null;
+  };
 
-  // filtering logic
-  const filteredChecklists = mockChecklists.filter((cl) => {
+  // Fetch checklists from backend
+  const fetchChecklists = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const userId = getUserId();
+      
+      if (!userId) {
+        setError("User not logged in");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Fetching checklists for user:", userId);
+      const response = await fetch(`${API_BASE_URL}/checklists/user/${userId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Checklists fetched:", data);
+      
+      setChecklists(data.checklists || data || []);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching checklists:", err);
+      setError("Failed to load checklists. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  // Fetch trips for dropdown
+  const fetchTrips = async () => {
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+
+      const response = await fetch(`${API_BASE_URL}/trips/user/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTrips(data.trips || data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching trips:", err);
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchChecklists();
+    fetchTrips();
+  }, []);
+
+  // Get unique places for dropdown
+  const uniquePlaces = ["all", ...new Set(checklists.map((c) => c.tripPlace).filter(Boolean))];
+
+  // Filtering logic
+  const filteredChecklists = checklists.filter((cl) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      cl.title.toLowerCase().includes(searchLower) ||
-      cl.tripPlace.toLowerCase().includes(searchLower);
+      cl.title?.toLowerCase().includes(searchLower) ||
+      cl.tripPlace?.toLowerCase().includes(searchLower);
 
     const matchesPlace = filterPlace === "all" || cl.tripPlace === filterPlace;
-    const matchesDate = !filterDate || cl.date === filterDate;
+    const matchesDate = !filterDate || 
+      new Date(cl.date).toISOString().split('T')[0] === filterDate;
 
     return matchesSearch && matchesPlace && matchesDate;
   });
 
-  // pagination
+  // Pagination
   const indexOfLast = currentPage * checklistsPerPage;
   const indexOfFirst = indexOfLast - checklistsPerPage;
   const currentChecklists = filteredChecklists.slice(indexOfFirst, indexOfLast);
@@ -125,48 +114,162 @@ const Checklists = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // reset page on filter change
+  // Generate default title when trip or date changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, filterPlace, filterDate]);
-
-  // Generate default title when place or date changes
-  useEffect(() => {
-    if (selectedPlace && selectedDate) {
-      const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-      setChecklistTitle(`${selectedPlace} ${formattedDate}`);
+    if (selectedTrip && selectedDate) {
+      const selectedTripData = trips.find(trip => trip._id === selectedTrip);
+      if (selectedTripData) {
+        const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        const defaultTitle = `${selectedTripData.title} ${formattedDate}`;
+        setChecklistTitle(defaultTitle);
+      }
+    } else {
+      setChecklistTitle("");
     }
-  }, [selectedPlace, selectedDate]);
+  }, [selectedTrip, selectedDate, trips]);
 
   // Reset form when popup is opened/closed
   useEffect(() => {
     if (showPopup) {
       // Set default values when opening popup
-      setSelectedPlace("");
+      setSelectedTrip("");
       setSelectedDate(new Date().toISOString().split('T')[0]);
-    } else {
-      // Clear form when closing popup
-      setSelectedPlace("");
       setChecklistTitle("");
-      setSelectedDate(new Date().toISOString().split('T')[0]);
+      setError("");
     }
   }, [showPopup]);
 
-  const handleSaveChecklist = () => {
-    // Here you would typically save the checklist to your database
-    console.log("Saving checklist:", {
-      title: checklistTitle,
-      place: selectedPlace,
-      date: selectedDate
-    });
-    
-    // Close the popup
-    setShowPopup(false);
+  const handleSaveChecklist = async () => {
+    if (!selectedTrip || !checklistTitle || !selectedDate) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setSavingChecklist(true);
+      setError("");
+      const userId = getUserId();
+
+      if (!userId) {
+        setError("User not logged in");
+        setSavingChecklist(false);
+        return;
+      }
+
+      const selectedTripData = trips.find(trip => trip._id === selectedTrip);
+      if (!selectedTripData) {
+        setError("Selected trip not found");
+        setSavingChecklist(false);
+        return;
+      }
+
+      const checklistData = {
+        userId: userId,
+        tripId: selectedTrip,
+        title: checklistTitle,
+        tripPlace: selectedTripData.title,
+        date: selectedDate,
+        startTime: "",
+        endTime: ""
+      };
+
+      console.log("Saving checklist:", checklistData);
+
+      const response = await fetch(`${API_BASE_URL}/checklists/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(checklistData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save checklist');
+      }
+
+      const result = await response.json();
+      console.log("Checklist created:", result);
+      
+      // Refresh checklists list
+      await fetchChecklists();
+      
+      // Close popup and reset
+      setShowPopup(false);
+      setSelectedTrip("");
+      setChecklistTitle("");
+      setSelectedDate(new Date().toISOString().split('T')[0]);
+      setSavingChecklist(false);
+      
+    } catch (err) {
+      console.error("Error saving checklist:", err);
+      setError(err.message || "Failed to save checklist");
+      setSavingChecklist(false);
+    }
   };
+
+  const handleDeleteClick = (checklist) => {
+    setChecklistToDelete(checklist);
+    setShowDeletePopup(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!checklistToDelete) return;
+
+    try {
+      setError("");
+      const response = await fetch(`${API_BASE_URL}/checklists/${checklistToDelete._id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete checklist');
+      }
+      
+      console.log("Checklist deleted successfully");
+      
+      // Refresh checklists list
+      await fetchChecklists();
+      
+      // Close popup
+      setShowDeletePopup(false);
+      setChecklistToDelete(null);
+      
+    } catch (err) {
+      console.error("Error deleting checklist:", err);
+      setError(err.message || "Failed to delete checklist");
+      setShowDeletePopup(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterPlace, filterDate]);
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -187,6 +290,12 @@ const Checklists = () => {
               </button>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 my-4">
               <div className="flex-1">
@@ -204,9 +313,10 @@ const Checklists = () => {
                 value={filterPlace}
                 onChange={(e) => setFilterPlace(e.target.value)}
               >
-                {uniquePlaces.map((place) => (
+                <option value="all">All Places</option>
+                {uniquePlaces.filter(place => place !== "all").map((place) => (
                   <option key={place} value={place}>
-                    {place === "all" ? "All Places" : place}
+                    {place}
                   </option>
                 ))}
               </select>
@@ -224,30 +334,52 @@ const Checklists = () => {
         {/* Checklist Listings */}
         <div className="p-4">
           <div className="space-y-4 mb-16">
-            {currentChecklists.length > 0 ? (
+            {loading ? (
+              <div className="p-8 text-center bg-[#eef7f1] rounded-lg">
+                <p className="text-gray-500">Loading checklists...</p>
+              </div>
+            ) : currentChecklists.length > 0 ? (
               currentChecklists.map((cl) => (
                 <div
-                  key={cl.id}
-                  className="pr-4 pl-4 pt-4 bg-[#eef7f1] rounded-lg hover:bg-[#f6f9f6] transition-colors"
+                  key={cl._id}
+                  className="pr-4 pl-4 pt-4 bg-[#eef7f1] rounded-lg hover:bg-[#f6f9f6] transition-colors relative"
                 >
-                  <h3 className="text-lg  font-semibold text-black">
+                  {/* Timestamp - Top Right */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="w-3 h-3" />
+                    <span>{formatDateTime(cl.createdAt)}</span>
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-black pr-16">
                     {cl.title}
                   </h3>
-                  <p className="text-gray-900">{cl.tripPlace}</p>
+                  <div className="flex items-center gap-1 text-gray-900 mb-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{cl.tripPlace}</span>
+                  </div>
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-sm mb-4 text-gray-600">
-                      Species Count: {cl.speciesCount}
+                      Species Count: {cl.totalSpecies || 0}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      Date: {cl.date}
-                    </p>
+ 
                   </div>
+
+                  {/* Delete Button - Bottom Right */}
+                  <button
+                    onClick={() => handleDeleteClick(cl)}
+                    className="absolute bottom-3 right-3 p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
+                    title="Delete checklist"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center bg-[#f5f6f5] rounded-lg">
+              <div className="p-8 text-center bg-[#eef7f1] rounded-lg">
                 <p className="text-gray-500">
-                  No checklists found matching your criteria
+                  {searchTerm || filterPlace !== "all" || filterDate 
+                    ? "No checklists found matching your criteria" 
+                    : "No checklists found. Click 'Add New Checklist' to get started!"}
                 </p>
               </div>
             )}
@@ -312,20 +444,29 @@ const Checklists = () => {
               </button>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Trip Location</label>
+              <label className="block text-gray-700 mb-2">Select Trip</label>
               <select
-                value={selectedPlace}
-                onChange={(e) => setSelectedPlace(e.target.value)}
+                value={selectedTrip}
+                onChange={(e) => setSelectedTrip(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">Select a location</option>
-                {uniquePlaces.filter(place => place !== "all").map((place) => (
-                  <option key={place} value={place}>
-                    {place}
+                <option value="">Select a trip</option>
+                {trips.map((trip) => (
+                  <option key={trip._id} value={trip._id}>
+                    {trip.title}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Don't see your trip? <a href="/trips" className="text-green-600 hover:underline">Create a new trip first</a>
+              </p>
             </div>
 
             <div className="mb-4">
@@ -347,28 +488,61 @@ const Checklists = () => {
                 onChange={(e) => setChecklistTitle(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                Default name generated from location and date. You can edit this.
+              <p className="text-xs text-gray-500 mt-1">
+                Default name generated from trip location and date. You can edit this.
               </p>
             </div>
 
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowPopup(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                disabled={savingChecklist}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveChecklist}
-                disabled={!selectedPlace || !checklistTitle}
+                disabled={!selectedTrip || !checklistTitle || savingChecklist}
                 className={`px-4 py-2 rounded-lg ${
-                  !selectedPlace || !checklistTitle
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-[#506142] text-white hover:bg-[#3a4a32]"
+                  selectedTrip && checklistTitle && !savingChecklist
+                    ? "bg-[#506142] text-white hover:bg-[#3a4a32]"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                Save Checklist
+                {savingChecklist ? "Saving..." : "Save Checklist"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Popup */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Checklist</h3>
+              <p className="text-gray-600">
+                Are you sure you want to delete "{checklistToDelete?.title}"? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowDeletePopup(false);
+                  setChecklistToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
               </button>
             </div>
           </div>

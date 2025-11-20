@@ -44,6 +44,8 @@ import BirderTrips from "../Pages/Birder/Trips";
 import BirderNotifications from "../Pages/Birder/Notifications";
 import BirderDiscussion from "../Pages/Birder/Discussion";
 import ProtectedRoute from "../Components/ProtectedRoute";
+import BirderSingleChecklist from "../Pages/Birder/SingleChecklist";
+import BirderSingleTrip from "../Pages/Birder/SingleTrip";
 
 //temporary!!
 import BirderCreateProfile from "../Pages/Birder/CreateProfile";
@@ -276,6 +278,25 @@ const Router = createBrowserRouter([
             element: (
               <ProtectedRoute requiredRole="birder">
                 <BirderDiscussion />
+              </ProtectedRoute>
+            ),
+          },
+
+          //change the nameee
+          {
+            path: "checklistOne",
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderSingleChecklist />
+              </ProtectedRoute>
+            ),
+          },
+
+          {
+            path: "tripOne",
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderSingleTrip />
               </ProtectedRoute>
             ),
           },

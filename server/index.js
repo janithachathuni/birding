@@ -9,6 +9,8 @@ const authRoutes = require('./routes/authRoutes');
 const birdRoutes = require('./routes/birdRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const userRoutes = require('./routes/users');
+const tripRoutes = require('./routes/tripRoutes');
+const checklistRoutes = require('./routes/checklistRoutes');
 
 const app = express();
 
@@ -21,7 +23,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
-const uploadDirs = ['uploads', 'uploads/profiles'];
+const uploadDirs = ['uploads', 'uploads/profiles', 'uploads/trips']; // ADD 'uploads/trips'
 uploadDirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -33,11 +35,13 @@ mongoose.connect('mongodb://localhost:27017/kurullo')
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB connection error:", err));
 
-// Routes - FIXED: Changed /api/profile to /api/profiles to match frontend
+// Routes
 app.use('/api/auth', authRoutes); 
 app.use('/api/birds', birdRoutes);
-app.use('/api/profiles', profileRoutes); // FIXED: was /api/profile, now /api/profiles
+app.use('/api/profiles', profileRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/checklists', checklistRoutes);
 
 // Default route
 app.get('/', (req, res) => {

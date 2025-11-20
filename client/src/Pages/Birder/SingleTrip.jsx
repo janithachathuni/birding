@@ -1,15 +1,19 @@
-import React from 'react';
-import UserSidebar from '../../Components/UserSidebar';
+import React from "react";
+import UserSidebar from "../../Components/UserSidebar";
+import UserSidebarRight from "../../Components/UserSidebarRight";
 
-const SingleTrip = () => {
+const tripOne = () => {
   return (
     <div className="flex min-h-screen bg-white">
       <UserSidebar />
-      <div className="flex-1 ml-64 p-4">
-        <h1>Single Trip view</h1>
+      <div className="flex flex-1 p-4 ml-[20%] mr-[30%]">
+        <div className="p-4 bg-[#f5f6f5] w-full rounded-lg">
+          <h1>One Trip</h1>
+        </div>
       </div>
+      <UserSidebarRight />
     </div>
   );
 };
 
-export default SingleTrip;
+export default tripOne;
