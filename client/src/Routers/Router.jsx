@@ -282,15 +282,15 @@ const Router = createBrowserRouter([
             ),
           },
 
-          //change the nameee
-          {
-            path: "checklistOne",
-            element: (
-              <ProtectedRoute requiredRole="birder">
-                <BirderSingleChecklist />
-              </ProtectedRoute>
-            ),
-          },
+        // In your routes file (e.g., App.jsx or routes.jsx)
+{
+  path: "checklist/:checklistId",
+  element: (
+    <ProtectedRoute requiredRole="birder">
+      <BirderSingleChecklist />
+    </ProtectedRoute>
+  ),
+},
 
           {
             path: "tripOne",
