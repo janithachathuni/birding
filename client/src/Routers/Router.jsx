@@ -293,7 +293,7 @@ const Router = createBrowserRouter([
 },
 
           {
-            path: "tripOne",
+            path: "trip/:tripId",
             element: (
               <ProtectedRoute requiredRole="birder">
                 <BirderSingleTrip />

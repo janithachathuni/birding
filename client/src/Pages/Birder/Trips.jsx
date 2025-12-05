@@ -2,19 +2,22 @@ import React, { useState, useEffect, useRef } from "react";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
 import { Trash2, Calendar, MapPin, Search } from "lucide-react";
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 // Fix for default marker icon in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = "http://localhost:3001/api";
 
 // Component to update map center when location changes
 const MapUpdater = ({ center, zoom }) => {
@@ -40,7 +43,7 @@ const Trips = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingTrip, setSavingTrip] = useState(false);
-  
+
   // Location search state
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const [locationSearchResults, setLocationSearchResults] = useState([]);
@@ -48,12 +51,12 @@ const Trips = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [mapCenter, setMapCenter] = useState([7.8731, 80.7718]); // Sri Lanka center
   const [mapZoom, setMapZoom] = useState(8);
-  
+
   const tripsPerPage = 10;
   const searchTimeoutRef = useRef(null);
 
   const getUserId = () => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
       return user.id || user._id;
@@ -67,7 +70,7 @@ const Trips = () => {
       setLoading(true);
       setError("");
       const userId = getUserId();
-      
+
       if (!userId) {
         setError("User not logged in");
         setLoading(false);
@@ -76,14 +79,14 @@ const Trips = () => {
 
       console.log("Fetching trips for user:", userId);
       const response = await fetch(`${API_BASE_URL}/trips/user/${userId}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log("Trips fetched:", data);
-      
+
       setTrips(data.trips || data || []);
       setLoading(false);
     } catch (err) {
@@ -108,32 +111,32 @@ const Trips = () => {
     try {
       setSearching(true);
       console.log("Searching for:", query);
-      
+
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?` +
-        `format=json&q=${encodeURIComponent(query)}&` +
-        `countrycodes=lk&limit=10&addressdetails=1`
+          `format=json&q=${encodeURIComponent(query)}&` +
+          `countrycodes=lk&limit=10&addressdetails=1`
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log("Search results from Nominatim:", data);
-      
+
       if (data && data.length > 0) {
-        const results = data.map(place => ({
+        const results = data.map((place) => ({
           displayName: place.display_name,
-          name: place.name || place.display_name.split(',')[0],
+          name: place.name || place.display_name.split(",")[0],
           formattedAddress: place.display_name,
           lat: parseFloat(place.lat),
           lng: parseFloat(place.lon),
           placeId: place.place_id.toString(),
           type: place.type,
-          class: place.class
+          class: place.class,
         }));
-        
+
         console.log("Processed results:", results);
         setLocationSearchResults(results);
         setShowSearchResults(true);
@@ -142,10 +145,10 @@ const Trips = () => {
         setLocationSearchResults([]);
         setShowSearchResults(true);
       }
-      
+
       setSearching(false);
     } catch (err) {
-      console.error('Error searching location:', err);
+      console.error("Error searching location:", err);
       setSearching(false);
       setLocationSearchResults([]);
       setShowSearchResults(false);
@@ -181,14 +184,14 @@ const Trips = () => {
       formattedAddress: location.formattedAddress,
       location: {
         lat: location.lat,
-        lng: location.lng
+        lng: location.lng,
       },
-      placeId: location.placeId
+      placeId: location.placeId,
     });
     setSelectedLocation(location.name);
     setLocationSearchQuery("");
     setShowSearchResults(false);
-    
+
     // Update map center and zoom
     setMapCenter([location.lat, location.lng]);
     setMapZoom(15);
@@ -205,9 +208,13 @@ const Trips = () => {
     })
     .sort((a, b) => {
       if (sortBy === "date-asc") {
-        return new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt);
+        return (
+          new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)
+        );
       } else if (sortBy === "date-desc") {
-        return new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt);
+        return (
+          new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)
+        );
       } else if (sortBy === "popular") {
         return (b.checklists?.length || 0) - (a.checklists?.length || 0);
       }
@@ -258,35 +265,34 @@ const Trips = () => {
         latitude: placeDetails.location.lat,
         longitude: placeDetails.location.lng,
         placeId: placeDetails.placeId,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
       };
 
       console.log("Saving trip:", tripData);
 
       const response = await fetch(`${API_BASE_URL}/trips/create`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(tripData)
+        body: JSON.stringify(tripData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save trip');
+        throw new Error(errorData.message || "Failed to save trip");
       }
 
       const result = await response.json();
       console.log("Trip created:", result);
-      
+
       await fetchTrips();
-      
+
       setShowPopup(false);
       setSelectedLocation("");
       setPlaceDetails(null);
       setLocationSearchQuery("");
       setSavingTrip(false);
-      
     } catch (err) {
       console.error("Error saving trip:", err);
       setError(err.message || "Failed to save trip");
@@ -304,21 +310,23 @@ const Trips = () => {
 
     try {
       setError("");
-      const response = await fetch(`${API_BASE_URL}/trips/${tripToDelete._id}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/trips/${tripToDelete._id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to delete trip');
+        throw new Error("Failed to delete trip");
       }
-      
+
       console.log("Trip deleted successfully");
-      
+
       await fetchTrips();
-      
+
       setShowDeletePopup(false);
       setTripToDelete(null);
-      
     } catch (err) {
       console.error("Error deleting trip:", err);
       setError(err.message || "Failed to delete trip");
@@ -328,10 +336,10 @@ const Trips = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -342,13 +350,16 @@ const Trips = () => {
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (showSearchResults && !e.target.closest('.location-search-container')) {
+      if (
+        showSearchResults &&
+        !e.target.closest(".location-search-container")
+      ) {
         setShowSearchResults(false);
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSearchResults]);
 
   return (
@@ -421,7 +432,12 @@ const Trips = () => {
                     <span>{formatDate(trip.createdAt || trip.date)}</span>
                   </div>
 
-                  <div className="flex flex-col md:flex-row gap-4">
+                  <div
+                    className="flex flex-col md:flex-row gap-4"
+                    onClick={() =>
+                      (window.location.href = `/birder/trip/${trip._id}`)
+                    }
+                  >
                     <div className="flex-1 pr-8">
                       <div className="flex justify-between items-start">
                         <h3 className="text-lg font-semibold text-gray-800">
@@ -430,12 +446,17 @@ const Trips = () => {
                       </div>
                       <p className="text-gray-600 mt-1">{trip.location}</p>
                       {trip.formattedAddress && (
-                        <p className="text-sm text-gray-500 mt-1">{trip.formattedAddress}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {trip.formattedAddress}
+                        </p>
                       )}
                       <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-500">
                         <span>Checklists: {trip.checklists?.length || 0}</span>
                         {trip.notes && (
-                          <span>Notes: {trip.notes.substring(0, 50)}{trip.notes.length > 50 ? '...' : ''}</span>
+                          <span>
+                            Notes: {trip.notes.substring(0, 50)}
+                            {trip.notes.length > 50 ? "..." : ""}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -454,7 +475,9 @@ const Trips = () => {
             ) : (
               <div className="p-8 text-center bg-[#f5f6f5] rounded-lg">
                 <p className="text-gray-500">
-                  {searchTerm ? "No trips found matching your search" : "No trips found. Click 'Add New Trip' to get started!"}
+                  {searchTerm
+                    ? "No trips found matching your search"
+                    : "No trips found. Click 'Add New Trip' to get started!"}
                 </p>
               </div>
             )}
@@ -526,7 +549,7 @@ const Trips = () => {
                 ×
               </button>
             </div>
-            
+
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                 {error}
@@ -566,8 +589,12 @@ const Trips = () => {
                       <div className="flex items-start gap-2">
                         <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-medium text-gray-800">{result.name}</p>
-                          <p className="text-sm text-gray-500">{result.formattedAddress}</p>
+                          <p className="font-medium text-gray-800">
+                            {result.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {result.formattedAddress}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -575,24 +602,35 @@ const Trips = () => {
                 </div>
               )}
 
-              {showSearchResults && locationSearchResults.length === 0 && locationSearchQuery && !searching && (
-                <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 text-center text-gray-500">
-                  No locations found matching "{locationSearchQuery}"
-                </div>
-              )}
+              {showSearchResults &&
+                locationSearchResults.length === 0 &&
+                locationSearchQuery &&
+                !searching && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 text-center text-gray-500">
+                    No locations found matching "{locationSearchQuery}"
+                  </div>
+                )}
             </div>
 
             {/* Spacing to push map down when search results are showing */}
             {showSearchResults && locationSearchResults.length > 0 && (
-              <div style={{ height: `${Math.min(locationSearchResults.length * 70, 256)}px` }} className="mb-4"></div>
+              <div
+                style={{
+                  height: `${Math.min(
+                    locationSearchResults.length * 70,
+                    256
+                  )}px`,
+                }}
+                className="mb-4"
+              ></div>
             )}
 
             {/* Map Container */}
             <div className="mb-4">
-              <MapContainer 
-                center={mapCenter} 
-                zoom={mapZoom} 
-                style={{ height: '300px', width: '100%', borderRadius: '8px' }}
+              <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
+                style={{ height: "300px", width: "100%", borderRadius: "8px" }}
                 scrollWheelZoom={true}
               >
                 <TileLayer
@@ -600,7 +638,12 @@ const Trips = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {placeDetails && (
-                  <Marker position={[placeDetails.location.lat, placeDetails.location.lng]} />
+                  <Marker
+                    position={[
+                      placeDetails.location.lat,
+                      placeDetails.location.lng,
+                    ]}
+                  />
                 )}
                 <MapUpdater center={mapCenter} zoom={mapZoom} />
               </MapContainer>
@@ -609,12 +652,17 @@ const Trips = () => {
             {/* Selected Location Details */}
             {placeDetails && (
               <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-medium text-green-800 mb-1">Selected Location:</h4>
+                <h4 className="font-medium text-green-800 mb-1">
+                  Selected Location:
+                </h4>
                 <p className="text-green-700">{placeDetails.displayName}</p>
-                <p className="text-sm text-green-600">{placeDetails.formattedAddress}</p>
+                <p className="text-sm text-green-600">
+                  {placeDetails.formattedAddress}
+                </p>
                 {placeDetails.location && (
                   <p className="text-xs text-green-600 mt-1">
-                    Coordinates: {placeDetails.location.lat.toFixed(6)}, {placeDetails.location.lng.toFixed(6)}
+                    Coordinates: {placeDetails.location.lat.toFixed(6)},{" "}
+                    {placeDetails.location.lng.toFixed(6)}
                   </p>
                 )}
               </div>
@@ -634,16 +682,16 @@ const Trips = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveTrip}
                 disabled={!placeDetails || savingTrip}
                 className={`px-4 py-2 rounded-lg ${
                   placeDetails && !savingTrip
-                    ? 'bg-[#506142] text-white hover:bg-[#3a4a32]' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? "bg-[#506142] text-white hover:bg-[#3a4a32]"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                {savingTrip ? 'Saving...' : 'Save Trip'}
+                {savingTrip ? "Saving..." : "Save Trip"}
               </button>
             </div>
           </div>
@@ -655,9 +703,12 @@ const Trips = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Trip</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Delete Trip
+              </h3>
               <p className="text-gray-600">
-                Are you sure you want to delete "{tripToDelete?.title}"? This action cannot be undone.
+                Are you sure you want to delete "{tripToDelete?.title}"? This
+                action cannot be undone.
               </p>
             </div>
 
@@ -671,7 +722,7 @@ const Trips = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
