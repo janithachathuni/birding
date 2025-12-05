@@ -1,10 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, MapPin, Search } from "lucide-react";
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCFbprhDc_fKXUHl-oYEVGXKD1HciiAsz0';
-const API_BASE_URL = 'http://localhost:3001/api'; // Changed to match Profile
+// Fix for default marker icon in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Component to update map center when location changes
+const MapUpdater = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
+  return null;
+};
 
 const Trips = () => {
   const [trips, setTrips] = useState([]);
@@ -19,13 +40,18 @@ const Trips = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingTrip, setSavingTrip] = useState(false);
+  
+  // Location search state
+  const [locationSearchQuery, setLocationSearchQuery] = useState("");
+  const [locationSearchResults, setLocationSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [mapCenter, setMapCenter] = useState([7.8731, 80.7718]); // Sri Lanka center
+  const [mapZoom, setMapZoom] = useState(8);
+  
   const tripsPerPage = 10;
-  const mapContainerRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markerInstanceRef = useRef(null);
-  const autocompleteRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
-  // Get userId consistently with Profile page
   const getUserId = () => {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -67,10 +93,106 @@ const Trips = () => {
     }
   };
 
-  // Fetch trips on component mount
   useEffect(() => {
     fetchTrips();
   }, []);
+
+  // Search location using Nominatim (OpenStreetMap)
+  const searchLocation = async (query) => {
+    if (!query.trim()) {
+      setLocationSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      setSearching(true);
+      console.log("Searching for:", query);
+      
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+        `format=json&q=${encodeURIComponent(query)}&` +
+        `countrycodes=lk&limit=10&addressdetails=1`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Search results from Nominatim:", data);
+      
+      if (data && data.length > 0) {
+        const results = data.map(place => ({
+          displayName: place.display_name,
+          name: place.name || place.display_name.split(',')[0],
+          formattedAddress: place.display_name,
+          lat: parseFloat(place.lat),
+          lng: parseFloat(place.lon),
+          placeId: place.place_id.toString(),
+          type: place.type,
+          class: place.class
+        }));
+        
+        console.log("Processed results:", results);
+        setLocationSearchResults(results);
+        setShowSearchResults(true);
+      } else {
+        console.log("No results found");
+        setLocationSearchResults([]);
+        setShowSearchResults(true);
+      }
+      
+      setSearching(false);
+    } catch (err) {
+      console.error('Error searching location:', err);
+      setSearching(false);
+      setLocationSearchResults([]);
+      setShowSearchResults(false);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (locationSearchQuery.trim()) {
+      searchTimeoutRef.current = setTimeout(() => {
+        searchLocation(locationSearchQuery);
+      }, 500);
+    } else {
+      setLocationSearchResults([]);
+      setShowSearchResults(false);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [locationSearchQuery]);
+
+  const handleSelectLocation = (location) => {
+    console.log("Location selected:", location);
+    setPlaceDetails({
+      displayName: location.name,
+      formattedAddress: location.formattedAddress,
+      location: {
+        lat: location.lat,
+        lng: location.lng
+      },
+      placeId: location.placeId
+    });
+    setSelectedLocation(location.name);
+    setLocationSearchQuery("");
+    setShowSearchResults(false);
+    
+    // Update map center and zoom
+    setMapCenter([location.lat, location.lng]);
+    setMapZoom(15);
+  };
 
   const filteredTrips = trips
     .filter((trip) => {
@@ -100,122 +222,20 @@ const Trips = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const loadGoogleMaps = () => {
-    return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.onload = () => {
-        console.log("Google Maps loaded successfully");
-        resolve();
-      };
-      script.onerror = () => {
-        reject(new Error("Failed to load Google Maps"));
-      };
-      document.head.appendChild(script);
-    });
-  };
-
-  const initializeAutocomplete = () => {
-    const input = document.getElementById('location-search');
-    if (!input || !mapContainerRef.current || !window.google) {
-      console.log("Missing dependencies for autocomplete");
-      return;
-    }
-
-    // Clear previous map
-    if (mapInstanceRef.current) {
-      mapContainerRef.current.innerHTML = '';
-    }
-
-    // Initialize map
-    const map = new window.google.maps.Map(mapContainerRef.current, {
-      center: { lat: 7.8731, lng: 80.7718 }, // Sri Lanka center
-      zoom: 8,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false
-    });
-    mapInstanceRef.current = map;
-
-    // Initialize marker
-    const marker = new window.google.maps.Marker({
-      map: map,
-      visible: false
-    });
-    markerInstanceRef.current = marker;
-
-    // Initialize autocomplete
-    const autocomplete = new window.google.maps.places.Autocomplete(input, {
-      types: ['establishment', 'geocode'],
-      componentRestrictions: { country: 'lk' }, // Restrict to Sri Lanka
-      fields: ['name', 'formatted_address', 'geometry', 'place_id', 'types']
-    });
-    autocompleteRef.current = autocomplete;
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      
-      if (!place.geometry) {
-        console.log("No geometry for place");
-        marker.setVisible(false);
-        setPlaceDetails(null);
-        return;
-      }
-
-      const locationData = {
-        displayName: place.name || place.formatted_address,
-        formattedAddress: place.formatted_address,
-        location: {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        },
-        placeId: place.place_id
-      };
-
-      console.log("Place selected:", locationData);
-      setSelectedLocation(place.name || place.formatted_address);
-      setPlaceDetails(locationData);
-
-      // Update map
-      if (place.geometry.viewport) {
-        map.fitBounds(place.geometry.viewport);
-      } else {
-        map.setCenter(place.geometry.location);
-        map.setZoom(15);
-      }
-
-      marker.setPosition(place.geometry.location);
-      marker.setVisible(true);
-    });
-  };
-
-  const handleAddTripClick = async () => {
-    try {
-      await loadGoogleMaps();
-      setShowPopup(true);
-      setSelectedLocation("");
-      setPlaceDetails(null);
-      setError("");
-      
-      // Initialize autocomplete after popup is shown
-      setTimeout(() => {
-        initializeAutocomplete();
-      }, 200);
-    } catch (err) {
-      console.error("Error loading Google Maps:", err);
-      setError("Failed to load map. Please try again.");
-    }
+  const handleAddTripClick = () => {
+    setShowPopup(true);
+    setSelectedLocation("");
+    setPlaceDetails(null);
+    setLocationSearchQuery("");
+    setLocationSearchResults([]);
+    setError("");
+    setMapCenter([7.8731, 80.7718]);
+    setMapZoom(8);
   };
 
   const handleSaveTrip = async () => {
     if (!placeDetails) {
-      setError("Please select a location from the suggestions");
+      setError("Please select a location from the search results");
       return;
     }
 
@@ -259,13 +279,12 @@ const Trips = () => {
       const result = await response.json();
       console.log("Trip created:", result);
       
-      // Refresh trips list
       await fetchTrips();
       
-      // Close popup and reset
       setShowPopup(false);
       setSelectedLocation("");
       setPlaceDetails(null);
+      setLocationSearchQuery("");
       setSavingTrip(false);
       
     } catch (err) {
@@ -295,10 +314,8 @@ const Trips = () => {
       
       console.log("Trip deleted successfully");
       
-      // Refresh trips list
       await fetchTrips();
       
-      // Close popup
       setShowDeletePopup(false);
       setTripToDelete(null);
       
@@ -318,22 +335,21 @@ const Trips = () => {
     });
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (mapContainerRef.current) {
-        mapContainerRef.current.innerHTML = '';
-      }
-      mapInstanceRef.current = null;
-      markerInstanceRef.current = null;
-      autocompleteRef.current = null;
-    };
-  }, []);
-
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, sortBy]);
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSearchResults && !e.target.closest('.location-search-container')) {
+        setShowSearchResults(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSearchResults]);
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -491,9 +507,9 @@ const Trips = () => {
 
       <UserSidebarRight />
 
-      {/* Add Trip Popup with Google Maps */}
+      {/* Add Trip Popup with OpenStreetMap */}
       {showPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Add New Trip</h3>
@@ -503,6 +519,7 @@ const Trips = () => {
                   setError("");
                   setSelectedLocation("");
                   setPlaceDetails(null);
+                  setLocationSearchQuery("");
                 }}
                 className="text-gray-500 hover:text-gray-700 text-xl"
               >
@@ -516,28 +533,77 @@ const Trips = () => {
               </div>
             )}
 
-            <div className="mb-4">
+            <div className="mb-4 location-search-container relative">
               <label className="block text-gray-700 mb-2">
-                Select Location
+                Search Location in Sri Lanka
               </label>
-              <input
-                type="text"
-                id="location-search"
-                placeholder="Search for a location in Sri Lanka..."
-                value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                autoComplete="off"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for a location..."
+                  value={locationSearchQuery}
+                  onChange={(e) => setLocationSearchQuery(e.target.value)}
+                  className="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  autoComplete="off"
+                />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                {searching && (
+                  <div className="absolute right-3 top-3">
+                    <div className="animate-spin h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && locationSearchResults.length > 0 && (
+                <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  {locationSearchResults.map((result, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSelectLocation(result)}
+                      className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-gray-800">{result.name}</p>
+                          <p className="text-sm text-gray-500">{result.formattedAddress}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {showSearchResults && locationSearchResults.length === 0 && locationSearchQuery && !searching && (
+                <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 text-center text-gray-500">
+                  No locations found matching "{locationSearchQuery}"
+                </div>
+              )}
             </div>
+
+            {/* Spacing to push map down when search results are showing */}
+            {showSearchResults && locationSearchResults.length > 0 && (
+              <div style={{ height: `${Math.min(locationSearchResults.length * 70, 256)}px` }} className="mb-4"></div>
+            )}
 
             {/* Map Container */}
             <div className="mb-4">
-              <div 
-                ref={mapContainerRef} 
-                className="w-full h-64 bg-gray-200 rounded-lg"
-                style={{ minHeight: '256px' }}
-              ></div>
+              <MapContainer 
+                center={mapCenter} 
+                zoom={mapZoom} 
+                style={{ height: '300px', width: '100%', borderRadius: '8px' }}
+                scrollWheelZoom={true}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {placeDetails && (
+                  <Marker position={[placeDetails.location.lat, placeDetails.location.lng]} />
+                )}
+                <MapUpdater center={mapCenter} zoom={mapZoom} />
+              </MapContainer>
             </div>
 
             {/* Selected Location Details */}
@@ -561,6 +627,7 @@ const Trips = () => {
                   setError("");
                   setSelectedLocation("");
                   setPlaceDetails(null);
+                  setLocationSearchQuery("");
                 }}
                 disabled={savingTrip}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"

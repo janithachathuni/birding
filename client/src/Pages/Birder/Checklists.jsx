@@ -3,7 +3,7 @@ import axios from "axios";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
 import { Trash2, Calendar, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
@@ -16,6 +16,7 @@ const api = axios.create({
 });
 
 const Checklists = () => {
+  const navigate = useNavigate();
   const [checklists, setChecklists] = useState([]);
   const [trips, setTrips] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -188,6 +189,11 @@ const Checklists = () => {
     }
   };
 
+  const handleCreateTripClick = () => {
+    setShowPopup(false);
+    navigate('/birder/trips', { state: { openCreatePopup: true } });
+  };
+
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -283,7 +289,15 @@ const Checklists = () => {
                 <option value="">Select a trip</option>
                 {trips.map((trip) => (<option key={trip._id} value={trip._id}>{trip.title}</option>))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Don't see your trip? <a href="/trips" className="text-green-600 hover:underline">Create a new trip first</a></p>
+              <p className="text-xs text-gray-500 mt-1">
+                Don't see your trip? 
+                <button 
+                  onClick={handleCreateTripClick}
+                  className="text-green-600 hover:underline ml-1"
+                >
+                  Create a new trip first
+                </button>
+              </p>
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Date</label>

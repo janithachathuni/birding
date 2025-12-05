@@ -35,7 +35,6 @@ const BirderSingleChecklist = () => {
   const [selectedBird, setSelectedBird] = useState(null);
   const [birdCount, setBirdCount] = useState(1);
   const [timeSeen, setTimeSeen] = useState("");
-  const [fieldNotes, setFieldNotes] = useState("");
   const [saving, setSaving] = useState(false);
   
   // Delete confirmation
@@ -71,7 +70,9 @@ const BirderSingleChecklist = () => {
     try {
       setSearching(true);
       console.log('Searching for:', term);
-      const response = await api.get('/birds');
+      
+      const response = await api.get('/birds/get');
+      
       console.log('API Response:', response);
       console.log('Birds data:', response.data);
       
@@ -80,29 +81,17 @@ const BirderSingleChecklist = () => {
       
       const searchLower = term.toLowerCase().trim();
       
-      // Improved filter logic
       const filtered = birds.filter(bird => {
-        // Check primary name
         if (bird.primaryName?.toLowerCase().includes(searchLower)) return true;
-        
-        // Check other names array
         if (bird.otherNames && Array.isArray(bird.otherNames)) {
           if (bird.otherNames.some(name => name?.toLowerCase().includes(searchLower))) return true;
         }
-        
-        // Check scientific name
         if (bird.scientificName?.toLowerCase().includes(searchLower)) return true;
-        
-        // Check Sinhala name
         if (bird.sinhalaName?.toLowerCase().includes(searchLower)) return true;
-        
-        // Check Tamil name
         if (bird.tamilName?.toLowerCase().includes(searchLower)) return true;
-        
         return false;
       });
       
-      // Sort results: exact matches first, then partial matches
       const sorted = filtered.sort((a, b) => {
         const aNameMatch = a.primaryName?.toLowerCase() === searchLower;
         const bNameMatch = b.primaryName?.toLowerCase() === searchLower;
@@ -137,7 +126,6 @@ const BirderSingleChecklist = () => {
     setShowSearchResults(false);
     setBirdCount(1);
     setTimeSeen(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
-    setFieldNotes("");
     setShowAddPopup(true);
   };
 
@@ -156,7 +144,7 @@ const BirderSingleChecklist = () => {
         birdId: selectedBird._id,
         count: birdCount,
         timeSeen,
-        fieldNotes
+        fieldNotes: '' // Send empty string for field notes
       });
       
       await fetchChecklist();
@@ -365,7 +353,7 @@ const BirderSingleChecklist = () => {
 
       <UserSidebarChecklist checklistId={checklistId} />
 
-      {/* Add Observation Popup */}
+      {/* Add Observation Popup - Simplified without field notes */}
       {showAddPopup && selectedBird && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
@@ -378,7 +366,7 @@ const BirderSingleChecklist = () => {
                 <FaTimes />
               </button>
             </div>
-            <div className="mb-4">
+            <div className="mb-6">
               <p className="font-medium text-gray-800">{selectedBird.primaryName}</p>
               {selectedBird.otherNames && selectedBird.otherNames.length > 0 && (
                 <p className="text-xs text-gray-500">{selectedBird.otherNames.join(', ')}</p>
@@ -386,13 +374,13 @@ const BirderSingleChecklist = () => {
               <p className="text-sm text-gray-500 italic">{selectedBird.scientificName}</p>
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Count</label>
+              <label className="block text-gray-700 mb-2 font-medium">Count</label>
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setBirdCount(Math.max(1, birdCount - 1))} 
-                  className="w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300"
+                  className="w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center"
                 >
-                  <FaMinus className="mx-auto text-xs" />
+                  <FaMinus className="text-xs" />
                 </button>
                 <input 
                   type="number" 
@@ -403,31 +391,20 @@ const BirderSingleChecklist = () => {
                 />
                 <button 
                   onClick={() => setBirdCount(birdCount + 1)} 
-                  className="w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300"
+                  className="w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center"
                 >
-                  <FaPlus className="mx-auto text-xs" />
+                  <FaPlus className="text-xs" />
                 </button>
               </div>
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Time Seen</label>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2 font-medium">Time Seen</label>
               <input 
                 type="time" 
                 value={timeSeen} 
                 onChange={(e) => setTimeSeen(e.target.value)} 
                 className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Field Notes (optional)</label>
-              <textarea 
-                value={fieldNotes} 
-                onChange={(e) => setFieldNotes(e.target.value)} 
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
-                rows="2" 
-                placeholder="Any observations..."
-                maxLength="500"
               />
             </div>
             <div className="flex justify-end gap-2">
