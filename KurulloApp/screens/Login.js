@@ -20,9 +20,9 @@ export default function Login({ navigation }) {
         const { role } = res.data.user;
 
         if (role === 'admin') {
-          setIsAdmin(true); // show "OPEN WEB APP" button
+          setIsAdmin(true);
         } else {
-          navigation.replace('Home'); // normal user
+          navigation.replace('Home');
         }
       } else if (res.data === 'Success') {
         navigation.replace('Home');

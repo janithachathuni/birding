@@ -305,8 +305,16 @@ const BirderSingleChecklist = () => {
                   {observations.map((obs) => (
                     <tr key={obs._id} className="border-b border-gray-200 hover:bg-gray-50">
                       <td className="py-3 px-4">
-                        <p className="text-gray-800 font-semibold">{obs.birdName}</p>
-                        <p className="text-xs text-gray-500 italic">{obs.scientificName}</p>
+<p 
+  className="text-gray-800 font-semibold hover:text-[#506142] hover:underline cursor-pointer"
+  onClick={() => {
+    // Extract the ID if it's an object
+    const birdId = obs.birdId?._id ? obs.birdId._id : obs.birdId;
+    navigate(`/bird/${birdId}`);
+  }}
+>
+  {obs.birdName}
+</p>                    <p className="text-xs text-gray-500 italic">{obs.scientificName}</p>
                         {obs.fieldNotes && (
                           <p className="text-xs text-gray-600 mt-1">Note: {obs.fieldNotes}</p>
                         )}
