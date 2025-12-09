@@ -5,6 +5,11 @@ import UserSidebarRight from "../../Components/UserSidebarRight";
 import EditProfile from "./EditProfile";
 import axios from "axios";
 
+// Import icons from react-icons
+import { FaShieldAlt, FaUserShield, FaCrown, FaCheckCircle, FaUserCheck } from "react-icons/fa";
+import { IoShieldCheckmark } from "react-icons/io5";
+import { RiAdminFill } from "react-icons/ri";
+
 //images import
 import bannerimg from "../../assets/bannerimg.png";
 import profileimg from "../../assets/default_profile_pic.png";
@@ -271,11 +276,21 @@ const Blog = () => {
 
               {/* Profile details */}
               <div className="px-6 mt-20">
-                {/* Name & Username */}
-                <div>
+                {/* Name & Username with moderator badge */}
+                <div className="flex items-center gap-2">
                   <p className="text-2xl font-bold text-black">
                     {profile.displayName}
                   </p>
+                  {/* Moderator Badge with Icon */}
+                  {profileUser.moderator && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-900 text-white text-xs font-medium">
+                      <FaShieldAlt className="text-xs" />
+                      <span>Moderator</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2 mt-1">
                   <p className="text-gray-500 text-sm">
                     @{profileUser.username}
                   </p>

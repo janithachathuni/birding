@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FaCamera, FaTimes } from "react-icons/fa";
 
 const CreatePost = ({ onComplete }) => {
@@ -9,7 +10,11 @@ const CreatePost = ({ onComplete }) => {
   const [tagInputs, setTagInputs] = useState({});
 
   useEffect(() => {
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    
     return () => {
+      document.body.style.overflow = 'unset';
       photos.forEach((p) => URL.revokeObjectURL(p.url));
     };
   }, [photos]);
@@ -88,7 +93,7 @@ const CreatePost = ({ onComplete }) => {
     }
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 pt-8 px-4">
       <div className="relative bg-[#F5F6F5] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
         {/* Header */}
@@ -233,7 +238,7 @@ const CreatePost = ({ onComplete }) => {
 
       {/* Discard Confirmation */}
       {showDiscardConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">
               Save Progress?
@@ -273,6 +278,8 @@ const CreatePost = ({ onComplete }) => {
       )}
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default CreatePost;
