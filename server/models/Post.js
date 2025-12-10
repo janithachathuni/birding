@@ -6,24 +6,26 @@ const PostImageSchema = new mongoose.Schema({
     required: true
   },
   birds: [{
+    // Make birdId optional to allow custom bird names
     birdId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Bird',
-      required: true
+      ref: 'Bird'
     },
-    // The name used for tagging (could be primaryName, otherNames, sinhalaName, or tamilName)
     taggedName: {
       type: String,
       required: true
     },
-    // Optional: Store which type of name was used (for analytics/display)
     nameType: {
       type: String,
-      enum: ['primaryName', 'otherName', 'sinhalaName', 'tamilName'],
+      enum: ['primaryName', 'otherName', 'sinhalaName', 'tamilName', 'custom'],
       default: 'primaryName'
+    },
+    // Flag for custom bird names not in database
+    isCustom: {
+      type: Boolean,
+      default: false
     }
   }],
-  // Coordinates for bird sighting location (optional)
   location: {
     coordinates: {
       lat: Number,
@@ -69,12 +71,6 @@ const PostSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bird'
   }],
-  // Privacy settings
-  privacy: {
-    type: String,
-    enum: ['public', 'private', 'followers'],
-    default: 'public'
-  },
   // Users who have hidden/blocked this post
   hiddenFrom: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -96,7 +92,6 @@ PostSchema.index({ 'images.birds.birdId': 1 });
 PostSchema.index({ allBirdsInPost: 1 });
 PostSchema.index({ hashtags: 1 });
 PostSchema.index({ createdAt: -1 });
-PostSchema.index({ privacy: 1 });
 
 // Middleware to handle automatic updates
 PostSchema.pre('save', function(next) {
@@ -107,12 +102,14 @@ PostSchema.pre('save', function(next) {
     this.mainImage = this.images[0].imageUrl;
   }
   
-  // Update allBirdsInPost array with unique bird IDs
+  // Update allBirdsInPost array with unique bird IDs (only verified ones with birdId)
   if (this.isModified('images')) {
     const birdIds = new Set();
     this.images.forEach(image => {
       image.birds.forEach(bird => {
-        birdIds.add(bird.birdId.toString());
+        if (bird.birdId && !bird.isCustom) {
+          birdIds.add(bird.birdId.toString());
+        }
       });
     });
     this.allBirdsInPost = Array.from(birdIds);

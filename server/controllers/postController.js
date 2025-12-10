@@ -2,12 +2,13 @@ const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const Reply = require('../models/Reply');
 const Profile = require('../models/Profile');
+const Bird = require('../models/Bird'); // Assuming you have a Bird model
 
 // Create a new post
 exports.createPost = async (req, res) => {
   try {
-    const { caption, location, hashtags, privacy, images } = req.body;
-    const userId = req.user.id; // Assuming you have authentication middleware
+    const { caption, location, hashtags, images } = req.body;
+    const userId = req.user.id;
 
     // Validate that at least one image is provided
     if (!images || images.length === 0) {
@@ -26,7 +27,6 @@ exports.createPost = async (req, res) => {
       caption,
       location,
       hashtags: hashtags || [],
-      privacy: privacy || 'public',
       images
     });
 
@@ -36,6 +36,12 @@ exports.createPost = async (req, res) => {
     await post.populate({
       path: 'user',
       select: 'username profilePic'
+    });
+
+    // Populate bird details for verified birds
+    await post.populate({
+      path: 'images.birds.birdId',
+      select: 'primaryName scientificName image otherNames sinhalaName tamilName'
     });
 
     res.status(201).json({
@@ -55,26 +61,10 @@ exports.getAllPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    // Build query based on privacy
-    let query = { privacy: 'public' };
-    
-    // If user is authenticated, show their own posts and posts from users they follow
-    if (req.user) {
-      const userId = req.user.id;
-      const profile = await Profile.findOne({ user: userId });
-      
-      query = {
-        $or: [
-          { privacy: 'public' },
-          { user: userId },
-          { 
-            privacy: 'followers',
-            user: { $in: profile.following }
-          }
-        ],
-        hiddenFrom: { $ne: userId }
-      };
-    }
+    // All posts are public now (no privacy settings)
+    const query = {
+      hiddenFrom: { $ne: req.user?.id || null }
+    };
 
     const posts = await Post.find(query)
       .sort({ createdAt: -1 })
@@ -120,20 +110,8 @@ exports.getPostById = async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    // Check if user can view this post based on privacy
-    const userId = req.user?.id;
-    if (post.privacy !== 'public' && post.user._id.toString() !== userId) {
-      if (post.privacy === 'followers') {
-        const profile = await Profile.findOne({ user: userId });
-        if (!profile || !profile.following.includes(post.user._id)) {
-          return res.status(403).json({ error: 'Access denied' });
-        }
-      } else if (post.privacy === 'private') {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-    }
-
     // Check if user has hidden this post
+    const userId = req.user?.id;
     if (userId && post.hiddenFrom.includes(userId)) {
       return res.status(404).json({ error: 'Post not found' });
     }
@@ -154,22 +132,10 @@ exports.getPostsByUser = async (req, res) => {
     const userId = req.params.userId;
     const viewerId = req.user?.id;
     
-    let query = { user: userId };
-    
-    // Apply privacy settings if viewing other user's posts
-    if (viewerId !== userId) {
-      query.privacy = 'public';
-      
-      // If viewer follows the user, show followers-only posts too
-      if (viewerId) {
-        const profile = await Profile.findOne({ user: viewerId });
-        if (profile.following.includes(userId)) {
-          query.privacy = { $in: ['public', 'followers'] };
-        }
-      }
-      
-      query.hiddenFrom = { $ne: viewerId };
-    }
+    const query = { 
+      user: userId,
+      hiddenFrom: { $ne: viewerId || null }
+    };
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -210,23 +176,8 @@ exports.getPostsByBird = async (req, res) => {
     
     const query = {
       'images.birds.birdId': birdId,
-      privacy: 'public'
+      hiddenFrom: { $ne: req.user?.id || null }
     };
-
-    if (req.user) {
-      const userId = req.user.id;
-      const profile = await Profile.findOne({ user: userId });
-      
-      query.$or = [
-        { privacy: 'public' },
-        { user: userId },
-        { 
-          privacy: 'followers',
-          user: { $in: profile.following }
-        }
-      ];
-      query.hiddenFrom = { $ne: userId };
-    }
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -264,7 +215,7 @@ exports.getPostsByBird = async (req, res) => {
 // Update post
 exports.updatePost = async (req, res) => {
   try {
-    const { caption, location, hashtags, privacy } = req.body;
+    const { caption, location, hashtags } = req.body;
     const userId = req.user.id;
     
     const post = await Post.findById(req.params.id);
@@ -282,7 +233,6 @@ exports.updatePost = async (req, res) => {
     post.caption = caption || post.caption;
     post.location = location || post.location;
     post.hashtags = hashtags || post.hashtags;
-    post.privacy = privacy || post.privacy;
     
     await post.save();
     
@@ -340,18 +290,6 @@ exports.toggleLike = async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
     
-    // Check if user can view this post
-    if (post.privacy !== 'public' && post.user.toString() !== userId) {
-      if (post.privacy === 'followers') {
-        const profile = await Profile.findOne({ user: userId });
-        if (!profile || !profile.following.includes(post.user._id)) {
-          return res.status(403).json({ error: 'Access denied' });
-        }
-      } else if (post.privacy === 'private') {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-    }
-    
     const likeIndex = post.likes.indexOf(userId);
     
     if (likeIndex === -1) {
@@ -405,7 +343,7 @@ exports.hidePost = async (req, res) => {
   }
 };
 
-// Search posts by hashtag or caption
+// Search posts by hashtag, caption, or bird name
 exports.searchPosts = async (req, res) => {
   try {
     const { q } = req.query;
@@ -414,44 +352,28 @@ exports.searchPosts = async (req, res) => {
       return res.status(400).json({ error: 'Search query is required' });
     }
     
+    // First, search for birds matching the query
+    const matchingBirds = await Bird.find({
+      $or: [
+        { primaryName: { $regex: q, $options: 'i' } },
+        { scientificName: { $regex: q, $options: 'i' } },
+        { otherNames: { $regex: q, $options: 'i' } },
+        { sinhalaName: { $regex: q, $options: 'i' } },
+        { tamilName: { $regex: q, $options: 'i' } }
+      ]
+    }).select('_id');
+
+    const birdIds = matchingBirds.map(bird => bird._id);
+    
     const query = {
       $or: [
         { caption: { $regex: q, $options: 'i' } },
-        { hashtags: { $regex: q, $options: 'i' } }
+        { hashtags: { $regex: q, $options: 'i' } },
+        { 'images.birds.taggedName': { $regex: q, $options: 'i' } },
+        { 'images.birds.birdId': { $in: birdIds } }
       ],
-      privacy: 'public'
+      hiddenFrom: { $ne: req.user?.id || null }
     };
-    
-    if (req.user) {
-      const userId = req.user.id;
-      const profile = await Profile.findOne({ user: userId });
-      
-      query.$or = [
-        { 
-          $or: [
-            { caption: { $regex: q, $options: 'i' } },
-            { hashtags: { $regex: q, $options: 'i' } }
-          ],
-          privacy: 'public'
-        },
-        { 
-          $or: [
-            { caption: { $regex: q, $options: 'i' } },
-            { hashtags: { $regex: q, $options: 'i' } }
-          ],
-          user: userId
-        },
-        { 
-          $or: [
-            { caption: { $regex: q, $options: 'i' } },
-            { hashtags: { $regex: q, $options: 'i' } }
-          ],
-          privacy: 'followers',
-          user: { $in: profile.following }
-        }
-      ];
-      query.hiddenFrom = { $ne: userId };
-    }
     
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;

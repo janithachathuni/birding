@@ -147,14 +147,13 @@ const processSingleImage = (req, res, next) => {
 // Create post with multiple images
 router.post('/', (req, res, next) => {
     console.log("=== CREATE POST ROUTE HIT ===");
-    console.log("Headers:", req.headers);
     console.log("Body before multer:", req.body);
     
     processPostImages(req, res, (err) => {
         if (err) return next(err);
         
-        console.log("Files processed by multer:", req.files);
-        console.log("Body after multer:", req.body);
+        console.log("Files processed by multer:", req.files?.length || 0);
+        console.log("Images data:", req.body.imagesData ? "Present" : "Missing");
         
         createPost(req, res);
     });
@@ -175,7 +174,7 @@ router.get('/bird/:birdId', getPostsByBird);
 // Get single post
 router.get('/:id', getPostById);
 
-// Update post (only caption, location, hashtags, privacy - not images)
+// Update post (only caption, location, hashtags - not images)
 router.put('/:id', updatePost);
 
 // Delete post
