@@ -11,6 +11,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const userRoutes = require('./routes/users');
 const tripRoutes = require('./routes/tripRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
+const postRoutes = require('./routes/postRoutes'); // ADD THIS
 
 const app = express();
 
@@ -23,7 +24,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
-const uploadDirs = ['uploads', 'uploads/profiles', 'uploads/trips']; // ADD 'uploads/trips'
+const uploadDirs = ['uploads', 'uploads/profiles', 'uploads/trips', 'uploads/posts']; // ADD 'uploads/posts'
 uploadDirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -42,6 +43,7 @@ app.use('/api/profiles', profileRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/checklists', checklistRoutes);
+app.use('/api/posts', postRoutes); // ADD THIS
 
 // Default route
 app.get('/', (req, res) => {

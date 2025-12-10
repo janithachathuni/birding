@@ -7,12 +7,14 @@ const Bird = require('../models/Bird'); // Assuming you have a Bird model
 // Create a new post
 exports.createPost = async (req, res) => {
   try {
-    const { caption, location, hashtags, images } = req.body;
-    const userId = req.user.id;
+    console.log("=== CREATE POST CONTROLLER ===");
+    console.log("Request body:", req.body);
+    
+    const { caption, location, hashtags, images, userId } = req.body;
 
-    // Validate that at least one image is provided
-    if (!images || images.length === 0) {
-      return res.status(400).json({ error: 'At least one image is required' });
+    // Get userId from body
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
     }
 
     // Validate each image has at least one bird tag

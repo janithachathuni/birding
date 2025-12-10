@@ -143,8 +143,7 @@ const processSingleImage = (req, res, next) => {
     });
 };
 
-// POST ROUTES
-// Create post with multiple images
+// Create post with multiple images - NO AUTHENTICATION
 router.post('/', (req, res, next) => {
     console.log("=== CREATE POST ROUTE HIT ===");
     console.log("Body before multer:", req.body);
@@ -154,6 +153,8 @@ router.post('/', (req, res, next) => {
         
         console.log("Files processed by multer:", req.files?.length || 0);
         console.log("Images data:", req.body.imagesData ? "Present" : "Missing");
+        console.log("Body after multer:", req.body);
+        console.log("userId from body:", req.body.userId); // DEBUG - Should show the userId
         
         createPost(req, res);
     });

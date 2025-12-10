@@ -341,7 +341,7 @@ const Blog = () => {
           {/* Content area */}
           <div className="">
             {activeTab === "Posts" && (
-              <Posts/>
+  <Posts userId={profileUser._id} showAllPosts={false} />
             )}
             {activeTab === "Articles" && (
               <div className="text-center text-gray-500">

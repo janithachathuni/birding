@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import UserSidebar from "../../Components/UserSidebar";
-import UserSidebarRight from "../../Components/UserSidebarRight";
+import axios from "axios";
+import {
+  FaShare,
+  FaComment,
+  FaHeart,
+  FaRegHeart,
+  FaTrash,
+} from "react-icons/fa";
 
-//images import
 import profileimg from "../../assets/default_profile_pic.png";
 
-const Posts = () => {
-  // State variables from Blog.jsx
+const Posts = ({ userId = null, showAllPosts = true }) => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [lightbox, setLightbox] = useState({ isOpen: false, postId: null });
   const [showComments, setShowComments] = useState({});
@@ -14,60 +20,43 @@ const Posts = () => {
   const [newComment, setNewComment] = useState({});
   const [replyTo, setReplyTo] = useState({});
   const [newReply, setNewReply] = useState({});
-  const [profile, setProfile] = useState({});
-  const [profileUser, setProfileUser] = useState({});
 
   // Get current logged-in user
   const userData = localStorage.getItem("user");
   const currentUser = userData ? JSON.parse(userData) : null;
 
-  // Sample posts data (from Blog.jsx)
-  const posts = [
-    {
-      id: 1,
-      username: profileUser.username || "user",
-      profileimg: profileimg,
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      images: [
-        {
-          url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Flickr_-_Rainbirder_-_Ceylon_Junglefowl_%28Gallus_lafayetii%29_Male.jpg/500px-Flickr_-_Rainbirder_-_Ceylon_Junglefowl_%28Gallus_lafayetii%29_Male.jpg",
-          aspectRatio: "landscape",
-        },
-        {
-          url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Little_egret_%28Egretta_garzetta%29_Photograph_by_Shantanu_Kuveskar.jpg/500px-Little_egret_%28Egretta_garzetta%29_Photograph_by_Shantanu_Kuveskar.jpg",
-          aspectRatio: "portrait",
-        },
-        {
-          url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Spilornis_cheela_%28Bandipur%2C_2008%29.jpg/500px-Spilornis_cheela_%28Bandipur%2C_2008%29.jpg",
-          aspectRatio: "square",
-        },
-      ],
-      description:
-        "Here are some of the birds i saw in wilpattu national park.",
-      tags: ["Sri Lanka Jungle-fowl", "Little Egret", "Crested Serpent Eagle"],
-    },
-    {
-      id: 2,
-      username: profileUser.username || "user",
-      profileimg: profileimg,
-      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-      images: [
-        {
-          url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Spilornis_cheela_%28Bandipur%2C_2008%29.jpg/500px-Spilornis_cheela_%28Bandipur%2C_2008%29.jpg",
-          aspectRatio: "portrait",
-        },
-        {
-          url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Graureiher_Grey_Heron.jpg/500px-Graureiher_Grey_Heron.jpg",
-          aspectRatio: "landscape",
-        },
-      ],
-      description: "Beautiful birds i saw on the way home in galle.",
-      tags: ["Crested Serpent Eagle", "Grey Heron"],
-    },
-  ];
+  // Fetch posts on component mount
+  useEffect(() => {
+    fetchPosts();
+  }, [userId, showAllPosts]);
 
-  // Methods from Blog.jsx
-  const formatDate = (date) => {
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      let response;
+
+      if (showAllPosts) {
+        // Fetch all posts (for dashboard)
+        response = await axios.get("http://localhost:3001/api/posts");
+      } else if (userId) {
+        // Fetch specific user's posts (for blog page)
+        response = await axios.get(
+          `http://localhost:3001/api/posts/user/${userId}`
+        );
+      }
+
+      if (response.data.success) {
+        setPosts(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -153,63 +142,137 @@ const Posts = () => {
     setReplyTo((prev) => ({ ...prev, [`${postId}-${commentId}`]: false }));
   };
 
+  const handleDelete = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/posts/${postId}`,
+        {
+          data: { userId: currentUser._id || currentUser.id },
+        }
+      );
+
+      if (response.data.success) {
+        // Remove post from local state
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId)
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert(error.response?.data?.error || "Failed to delete post");
+    }
+  };
+
+  const handleLike = async (postId) => {
+    if (!currentUser) {
+      alert("Please login to like posts");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/posts/${postId}/like`,
+        { userId: currentUser._id || currentUser.id }
+      );
+
+      if (response.data.success) {
+        // Update the post's like status locally
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: response.data.data.liked
+                    ? [...post.likes, currentUser._id || currentUser.id]
+                    : post.likes.filter(
+                        (id) => id !== (currentUser._id || currentUser.id)
+                      ),
+                }
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
   // Prevent copying images
   const preventCopy = (e) => {
     e.preventDefault();
     alert("Copying is not allowed");
   };
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-white items-center justify-center">
+        <div className="text-[#143829] text-lg">Loading posts...</div>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="flex min-h-screen bg-white items-center justify-center">
+        <div className="text-[#143829] text-lg">No posts yet</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-white">
-      
-      {/* Main content with proper spacing to match Blog.jsx layout */}
-      <div className="flex flex-1 ">
+      {/* Main content */}
+      <div className="flex flex-1">
         <div className="bg-white w-full">
           <div className="space-y-6 p-4">
             {posts.map((post) => {
-              const currentImg = currentImageIndex[post.id] || 0;
+              const currentImg = currentImageIndex[post._id] || 0;
               const currentImage = post.images[currentImg];
+              const isLiked = post.likes?.includes(
+                currentUser?._id || currentUser?.id
+              );
 
               return (
                 <div
-                  key={post.id}
+                  key={post._id}
                   className="bg-[#f5f6f5] border border-gray-200 rounded-lg overflow-hidden"
                 >
                   {/* Post Header */}
                   <div className="flex items-center justify-between p-4 border-b border-[#143829]">
                     <div className="flex items-center space-x-3">
-                      {profile.profilePic ? (
-                        <img
-                          src={`http://localhost:3001/${profile.profilePic}`}
-                          className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
-                        />
-                      ) : (
-                        <img
-                          src={profileimg}
-                          className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
-                        />
-                      )}
+                      <img
+                        src={
+                          post.user?.profilePic
+                            ? `http://localhost:3001${post.user.profilePic}`
+                            : profileimg
+                        }
+                        className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
+                        alt="Profile"
+                      />
                       <span className="font-semibold text-[#143829]">
-                        {profileUser.username || "user"}
+                        {post.user?.username || "user"}
                       </span>
                     </div>
                     <span className="text-sm text-[#2b5b3f]">
-                      {formatDate(post.date)}
+                      {formatDate(post.createdAt)}
                     </span>
                   </div>
-
 
                   {/* Image Container */}
                   <div className="relative bg-[#143829]">
                     <div className="relative w-full">
                       <img
-                        src={currentImage.url}
+                        src={`http://localhost:3001${currentImage.imageUrl}`}
                         alt="Post"
                         className="w-full h-auto object-contain select-none pointer-events-auto"
                         onContextMenu={preventCopy}
                         onDragStart={preventCopy}
                         onClick={() =>
-                          setLightbox({ isOpen: true, postId: post.id })
+                          setLightbox({ isOpen: true, postId: post._id })
                         }
                       />
 
@@ -218,7 +281,7 @@ const Posts = () => {
                         <>
                           <button
                             onClick={() =>
-                              prevImage(post.id, post.images.length)
+                              prevImage(post._id, post.images.length)
                             }
                             className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
                           >
@@ -226,7 +289,7 @@ const Posts = () => {
                           </button>
                           <button
                             onClick={() =>
-                              nextImage(post.id, post.images.length)
+                              nextImage(post._id, post.images.length)
                             }
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 border border-white/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition"
                           >
@@ -255,16 +318,23 @@ const Posts = () => {
 
                   {/* Description */}
                   <div className="p-4">
-                    <p className="text-[#143829] mb-3">{post.description}</p>
+                    {post.caption && (
+                      <p className="text-[#143829] mb-3">{post.caption}</p>
+                    )}
 
-                    {/* Tags */}
+                    {/* Bird Tags */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {post.tags.map((tag, index) => (
+                      {currentImage.birds?.map((bird, index) => (
                         <span
                           key={index}
                           className="text-[black] text-sm underline font-medium hover:text-[#c4501b] transition cursor-pointer"
                         >
-                          {tag}
+                          {bird.taggedName}
+                          {bird.isCustom && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              (custom)
+                            </span>
+                          )}
                         </span>
                       ))}
                     </div>
@@ -275,65 +345,96 @@ const Posts = () => {
 
                   {/* Action buttons */}
                   <div className="flex items-center justify-end space-x-6 p-4">
-                    <button className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                        />
-                      </svg>
-                      <span>Share</span>
-                    </button>
+  <button className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition">
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+      />
+    </svg>
+    <span>Share</span>
+  </button>
 
-                    <button
-                      onClick={() => toggleComments(post.id)}
-                      className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                      <span>Comment</span>
-                    </button>
+  <button
+    onClick={() => toggleComments(post._id)}
+    className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
+  >
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+      />
+    </svg>
+    <span>Comment</span>
+  </button>
 
-                    <button className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#c4501b] transition">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                      <span>Like</span>
-                    </button>
-                  </div>
+  <button
+    onClick={() => handleLike(post._id)}
+    className={`flex items-center space-x-1 transition ${
+      isLiked
+        ? "text-[#c4501b]"
+        : "text-[#2b5b3f] hover:text-[#c4501b]"
+    }`}
+  >
+    <svg
+      className="w-5 h-5"
+      fill={isLiked ? "currentColor" : "none"}
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+      />
+    </svg>
+    <span>{post.likes?.length || 0}</span>
+  </button>
 
-                  {/* Comments section */}
-                  {showComments[post.id] && (
+  {/* Delete button - only show if user owns the post */}
+  {currentUser &&
+    (currentUser._id === post.user._id ||
+      currentUser.id === post.user._id) && (
+      <button
+        onClick={() => handleDelete(post._id)}
+        className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+        <span>Delete</span>
+      </button>
+    )}
+</div>
+
+                  {/* Comments section - keeping your existing structure */}
+                  {showComments[post._id] && (
                     <div className="border-t-2 border-[#143829] bg-yellow-100">
-                      {/* Add comment - only show if user is logged in */}
                       {currentUser && (
                         <div className="p-4 border-b border-[#2b5b3f]">
                           <div className="flex space-x-3">
@@ -344,11 +445,11 @@ const Posts = () => {
                             />
                             <div className="flex-1">
                               <textarea
-                                value={newComment[post.id] || ""}
+                                value={newComment[post._id] || ""}
                                 onChange={(e) =>
                                   setNewComment((prev) => ({
                                     ...prev,
-                                    [post.id]: e.target.value,
+                                    [post._id]: e.target.value,
                                   }))
                                 }
                                 placeholder="Write a comment..."
@@ -356,7 +457,7 @@ const Posts = () => {
                                 rows="2"
                               />
                               <button
-                                onClick={() => addComment(post.id)}
+                                onClick={() => addComment(post._id)}
                                 className="mt-2 px-4 py-1 bg-[#143829] text-white rounded hover:bg-[#2b5b3f] transition text-sm"
                               >
                                 Post
@@ -366,9 +467,8 @@ const Posts = () => {
                         </div>
                       )}
 
-                      {/* Comments list */}
                       <div className="max-h-96 overflow-y-auto">
-                        {(comments[post.id] || []).map((comment) => (
+                        {(comments[post._id] || []).map((comment) => (
                           <div
                             key={comment.id}
                             className="p-4 border-b border-gray-200"
@@ -401,8 +501,8 @@ const Posts = () => {
                                 onClick={() =>
                                   setReplyTo((prev) => ({
                                     ...prev,
-                                    [`${post.id}-${comment.id}`]:
-                                      !prev[`${post.id}-${comment.id}`],
+                                    [`${post._id}-${comment.id}`]:
+                                      !prev[`${post._id}-${comment.id}`],
                                   }))
                                 }
                                 className="text-[#2b5b3f] hover:text-[#a0361b] transition text-xs"
@@ -411,9 +511,8 @@ const Posts = () => {
                               </button>
                             )}
 
-                            {/* Reply form */}
                             {currentUser &&
-                              replyTo[`${post.id}-${comment.id}`] && (
+                              replyTo[`${post._id}-${comment.id}`] && (
                                 <div className="mt-2 ml-4 flex space-x-2">
                                   <img
                                     src={profileimg}
@@ -423,13 +522,13 @@ const Posts = () => {
                                   <div className="flex-1">
                                     <input
                                       value={
-                                        newReply[`${post.id}-${comment.id}`] ||
+                                        newReply[`${post._id}-${comment.id}`] ||
                                         ""
                                       }
                                       onChange={(e) =>
                                         setNewReply((prev) => ({
                                           ...prev,
-                                          [`${post.id}-${comment.id}`]:
+                                          [`${post._id}-${comment.id}`]:
                                             e.target.value,
                                         }))
                                       }
@@ -438,7 +537,7 @@ const Posts = () => {
                                     />
                                     <button
                                       onClick={() =>
-                                        addReply(post.id, comment.id)
+                                        addReply(post._id, comment.id)
                                       }
                                       className="mt-1 px-3 py-1 bg-[#2b5b3f] text-white rounded hover:bg-[#a0361b] transition text-xs"
                                     >
@@ -448,7 +547,6 @@ const Posts = () => {
                                 </div>
                               )}
 
-                            {/* Replies */}
                             {comment.replies.map((reply) => (
                               <div
                                 key={reply.id}
@@ -490,7 +588,6 @@ const Posts = () => {
           {/* Lightbox Modal */}
           {lightbox.isOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-              {/* Close button (top-right corner of screen) */}
               <button
                 className="fixed top-6 right-6 text-white text-4xl font-bold z-50 hover:text-gray-300 transition"
                 onClick={() => setLightbox({ isOpen: false, postId: null })}
@@ -498,27 +595,27 @@ const Posts = () => {
                 ×
               </button>
 
-              {/* Enlarged Image */}
               <img
-                src={
-                  posts.find((p) => p.id === lightbox.postId).images[
+                src={`http://localhost:3001${
+                  posts.find((p) => p._id === lightbox.postId).images[
                     currentImageIndex[lightbox.postId] || 0
-                  ].url
-                }
+                  ].imageUrl
+                }`}
                 alt="Enlarged"
                 className="max-h-[95vh] w-auto object-contain"
                 onContextMenu={preventCopy}
                 onDragStart={preventCopy}
               />
 
-              {/* Prev/Next buttons pinned to far left/right */}
-              {posts.find((p) => p.id === lightbox.postId).images.length > 1 && (
+              {posts.find((p) => p._id === lightbox.postId).images.length >
+                1 && (
                 <>
                   <button
                     onClick={() =>
                       prevImage(
                         lightbox.postId,
-                        posts.find((p) => p.id === lightbox.postId).images.length
+                        posts.find((p) => p._id === lightbox.postId).images
+                          .length
                       )
                     }
                     className="fixed left-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
@@ -529,7 +626,8 @@ const Posts = () => {
                     onClick={() =>
                       nextImage(
                         lightbox.postId,
-                        posts.find((p) => p.id === lightbox.postId).images.length
+                        posts.find((p) => p._id === lightbox.postId).images
+                          .length
                       )
                     }
                     className="fixed right-6 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:bg-black/70 transition"
@@ -542,7 +640,6 @@ const Posts = () => {
           )}
         </div>
       </div>
-      
     </div>
   );
 };

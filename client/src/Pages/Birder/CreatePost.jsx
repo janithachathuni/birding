@@ -16,10 +16,10 @@ const CreatePost = ({ onComplete }) => {
 
   useEffect(() => {
     // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    
+    document.body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
       photos.forEach((p) => URL.revokeObjectURL(p.url));
     };
   }, [photos]);
@@ -27,97 +27,115 @@ const CreatePost = ({ onComplete }) => {
   // Improved search function from checklist page
   const searchBirds = async (term, photoId) => {
     if (!term.trim()) {
-      setBirdSuggestions(prev => ({ ...prev, [photoId]: [] }));
-      setShowSearchResults(prev => ({ ...prev, [photoId]: false }));
+      setBirdSuggestions((prev) => ({ ...prev, [photoId]: [] }));
+      setShowSearchResults((prev) => ({ ...prev, [photoId]: false }));
       return;
     }
-    
+
     try {
-      setSearching(prev => ({ ...prev, [photoId]: true }));
-      console.log('Searching for:', term);
-      
-      const response = await axios.get('http://localhost:3001/api/birds/get');
-      
-      console.log('API Response:', response);
-      console.log('Birds data:', response.data);
-      
-      const birds = Array.isArray(response.data) ? response.data : response.data.birds || [];
-      console.log('Processed birds array:', birds.length, 'birds found');
-      
+      setSearching((prev) => ({ ...prev, [photoId]: true }));
+      console.log("Searching for:", term);
+
+      const response = await axios.get("http://localhost:3001/api/birds/get");
+
+      console.log("API Response:", response);
+      console.log("Birds data:", response.data);
+
+      const birds = Array.isArray(response.data)
+        ? response.data
+        : response.data.birds || [];
+      console.log("Processed birds array:", birds.length, "birds found");
+
       const searchLower = term.toLowerCase().trim();
-      
-      const filtered = birds.filter(bird => {
+
+      const filtered = birds.filter((bird) => {
         if (!bird.primaryName) return false;
-        
+
         // Check primary name
         if (bird.primaryName.toLowerCase().includes(searchLower)) return true;
-        
+
         // Check other names
         if (bird.otherNames && Array.isArray(bird.otherNames)) {
-          if (bird.otherNames.some(name => 
-            name && typeof name === 'string' && name.toLowerCase().includes(searchLower)
-          )) return true;
+          if (
+            bird.otherNames.some(
+              (name) =>
+                name &&
+                typeof name === "string" &&
+                name.toLowerCase().includes(searchLower)
+            )
+          )
+            return true;
         }
-        
+
         // Check scientific name
-        if (bird.scientificName?.toLowerCase().includes(searchLower)) return true;
-        
+        if (bird.scientificName?.toLowerCase().includes(searchLower))
+          return true;
+
         // Check Sinhala name
         if (bird.sinhalaName?.toLowerCase().includes(searchLower)) return true;
-        
+
         // Check Tamil name
         if (bird.tamilName?.toLowerCase().includes(searchLower)) return true;
-        
+
         return false;
       });
-      
+
       // Sort by relevance
       const sorted = filtered.sort((a, b) => {
         const aNameMatch = a.primaryName?.toLowerCase() === searchLower;
         const bNameMatch = b.primaryName?.toLowerCase() === searchLower;
-        
+
         // Exact match on primary name gets highest priority
         if (aNameMatch && !bNameMatch) return -1;
         if (!aNameMatch && bNameMatch) return 1;
-        
+
         // Then sort alphabetically
         return a.primaryName.localeCompare(b.primaryName);
       });
-      
+
       const results = sorted.slice(0, 10);
-      setBirdSuggestions(prev => ({ ...prev, [photoId]: results }));
-      setShowSearchResults(prev => ({ ...prev, [photoId]: results.length > 0 }));
-      setSearching(prev => ({ ...prev, [photoId]: false }));
-      
-      console.log('Search results for photo', photoId, ':', results.length, 'results');
+      setBirdSuggestions((prev) => ({ ...prev, [photoId]: results }));
+      setShowSearchResults((prev) => ({
+        ...prev,
+        [photoId]: results.length > 0,
+      }));
+      setSearching((prev) => ({ ...prev, [photoId]: false }));
+
+      console.log(
+        "Search results for photo",
+        photoId,
+        ":",
+        results.length,
+        "results"
+      );
     } catch (err) {
       console.error("Error searching birds:", err);
       console.error("Error details:", err.response?.data);
-      setBirdSuggestions(prev => ({ ...prev, [photoId]: [] }));
-      setShowSearchResults(prev => ({ ...prev, [photoId]: false }));
-      setSearching(prev => ({ ...prev, [photoId]: false }));
+      setBirdSuggestions((prev) => ({ ...prev, [photoId]: [] }));
+      setShowSearchResults((prev) => ({ ...prev, [photoId]: false }));
+      setSearching((prev) => ({ ...prev, [photoId]: false }));
     }
   };
 
   // Debounced search with better handling
   const handleTagInputChange = (photoId, value) => {
-    setTagInputs(prev => ({ ...prev, [photoId]: value }));
-    
+    setTagInputs((prev) => ({ ...prev, [photoId]: value }));
+
     // Show suggestions if typing
     if (value.trim() && !showSearchResults[photoId]) {
-      setShowSearchResults(prev => ({ ...prev, [photoId]: true }));
+      setShowSearchResults((prev) => ({ ...prev, [photoId]: true }));
     }
-    
+
     // Debounce the search
     const debounce = setTimeout(() => {
       if (value.trim()) {
         searchBirds(value, photoId);
       } else {
-        setBirdSuggestions(prev => ({ ...prev, [photoId]: [] }));
-        setShowSearchResults(prev => ({ ...prev, [photoId]: false }));
+        setBirdSuggestions((prev) => ({ ...prev, [photoId]: [] }));
+        setShowSearchResults((prev) => ({ ...prev, [photoId]: false }));
       }
     }, 300);
-    
+
     return () => clearTimeout(debounce);
   };
 
@@ -127,7 +145,7 @@ const CreatePost = ({ onComplete }) => {
       id: Date.now() + index,
       file,
       url: URL.createObjectURL(file),
-      birds: []
+      birds: [],
     }));
     setPhotos((prev) => [...prev, ...newPhotos]);
   };
@@ -156,17 +174,17 @@ const CreatePost = ({ onComplete }) => {
   };
 
   const removePhoto = (photoId) => {
-    const photoToRemove = photos.find(p => p.id === photoId);
+    const photoToRemove = photos.find((p) => p.id === photoId);
     if (photoToRemove) {
       URL.revokeObjectURL(photoToRemove.url);
     }
     setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-    setBirdSuggestions(prev => {
+    setBirdSuggestions((prev) => {
       const newSuggestions = { ...prev };
       delete newSuggestions[photoId];
       return newSuggestions;
     });
-    setShowSearchResults(prev => {
+    setShowSearchResults((prev) => {
       const newResults = { ...prev };
       delete newResults[photoId];
       return newResults;
@@ -176,74 +194,82 @@ const CreatePost = ({ onComplete }) => {
   const addTagToPhoto = (photoId, bird = null) => {
     const tag = tagInputs[photoId] || "";
     const trimmedTag = tag.trim();
-    
+
     if (!bird && !trimmedTag) return;
-    
-    const photo = photos.find(p => p.id === photoId);
-    
+
+    const photo = photos.find((p) => p.id === photoId);
+
     if (!photo) return;
-    
+
     // Check if bird already exists for this photo
     if (bird) {
       // Adding from suggestions
-      if (photo.birds.some(b => b.birdId === bird._id)) {
+      if (photo.birds.some((b) => b.birdId === bird._id)) {
         alert(`"${bird.primaryName}" is already tagged in this photo`);
         return;
       }
-      
+
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === photoId
-            ? { 
-                ...p, 
-                birds: [...p.birds, { 
-                  birdId: bird._id,
-                  name: bird.primaryName,
-                  scientificName: bird.scientificName || "",
-                  taggedName: bird.primaryName,
-                  nameType: 'primaryName'
-                }] 
+            ? {
+                ...p,
+                birds: [
+                  ...p.birds,
+                  {
+                    birdId: bird._id,
+                    name: bird.primaryName,
+                    scientificName: bird.scientificName || "",
+                    taggedName: bird.primaryName,
+                    nameType: "primaryName",
+                  },
+                ],
               }
             : p
         )
       );
     } else {
       // Free text entry (for when bird doesn't exist in database)
-      if (photo.birds.some(b => b.name === trimmedTag)) {
+      if (photo.birds.some((b) => b.name === trimmedTag)) {
         alert(`"${trimmedTag}" is already tagged in this photo`);
         return;
       }
-      
+
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === photoId
-            ? { 
-                ...p, 
-                birds: [...p.birds, { 
-                  name: trimmedTag,
-                  scientificName: "",
-                  isCustom: true
-                }] 
+            ? {
+                ...p,
+                birds: [
+                  ...p.birds,
+                  {
+                    name: trimmedTag,
+                    scientificName: "",
+                    isCustom: true,
+                  },
+                ],
               }
             : p
         )
       );
     }
-    
-    setTagInputs(prev => ({ ...prev, [photoId]: "" }));
-    setBirdSuggestions(prev => ({ ...prev, [photoId]: [] }));
-    setShowSearchResults(prev => ({ ...prev, [photoId]: false }));
+
+    setTagInputs((prev) => ({ ...prev, [photoId]: "" }));
+    setBirdSuggestions((prev) => ({ ...prev, [photoId]: [] }));
+    setShowSearchResults((prev) => ({ ...prev, [photoId]: false }));
   };
 
   const removeTagFromPhoto = (photoId, birdToRemove) => {
     setPhotos((prev) =>
       prev.map((p) =>
         p.id === photoId
-          ? { 
-              ...p, 
-              birds: p.birds.filter(bird => 
-                bird.birdId ? bird.birdId !== birdToRemove.birdId : bird.name !== birdToRemove.name
-              ) 
+          ? {
+              ...p,
+              birds: p.birds.filter((bird) =>
+                bird.birdId
+                  ? bird.birdId !== birdToRemove.birdId
+                  : bird.name !== birdToRemove.name
+              ),
             }
           : p
       )
@@ -274,68 +300,70 @@ const CreatePost = ({ onComplete }) => {
       }
 
       const user = JSON.parse(userData);
-      const token = user.token;
+      console.log("User from localStorage:", user); // DEBUG: Check what's in user object
+
+      // Get user ID - check your localStorage to see if it's _id or id
+      const userId = user._id || user.id;
+      console.log("User ID:", userId); // DEBUG: Make sure we have the ID
 
       // Prepare FormData for file upload
       const formData = new FormData();
 
       // Add images files
       photos.forEach((photo) => {
-        formData.append('images', photo.file);
+        formData.append("images", photo.file);
       });
 
       // Prepare images data with bird tags
-      const imagesData = photos.map(photo => ({
-        birds: photo.birds.map(bird => {
+      const imagesData = photos.map((photo) => ({
+        birds: photo.birds.map((bird) => {
           if (bird.birdId) {
-            // Verified bird from database
             return {
               birdId: bird.birdId,
               taggedName: bird.taggedName || bird.name,
-              nameType: bird.nameType || 'primaryName'
+              nameType: bird.nameType || "primaryName",
             };
           } else {
-            // Custom bird name
             return {
               taggedName: bird.name,
-              nameType: 'custom',
-              isCustom: true
+              nameType: "custom",
+              isCustom: true,
             };
           }
         }),
-        location: photo.location || null
+        location: photo.location || null,
       }));
 
-      // Add other post data
-      const postData = {
-        caption: description,
-        hashtags: [],
-        imagesData: JSON.stringify(imagesData)
-      };
+      // Add other post data - INCLUDING userId
+      formData.append("userId", userId); // ADD THIS LINE!
+      formData.append("caption", description);
+      formData.append("hashtags", JSON.stringify([]));
+      formData.append("imagesData", JSON.stringify(imagesData));
 
-      // Add JSON data to FormData
-      Object.keys(postData).forEach(key => {
-        formData.append(key, postData[key]);
-      });
+      console.log("FormData being sent - userId:", userId); // DEBUG
 
       // Make API call to create post
-      const response = await axios.post('http://localhost:3001/api/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
+      const response = await axios.post(
+        "http://localhost:3001/api/posts",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            // NO Authorization header needed since you don't use JWT
+          },
         }
-      });
+      );
 
       if (response.data.success) {
-        alert("Post created successfully!");
         onComplete?.();
       } else {
         throw new Error(response.data.error || "Failed to create post");
       }
-
     } catch (error) {
       console.error("Error creating post:", error);
-      alert(error.response?.data?.error || error.message || "Failed to create post");
+      alert(
+        error.response?.data?.error || error.message || "Failed to create post"
+      );
     } finally {
       setLoading(false);
     }
@@ -352,27 +380,27 @@ const CreatePost = ({ onComplete }) => {
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      const searchContainers = document.querySelectorAll('.search-container');
+      const searchContainers = document.querySelectorAll(".search-container");
       let clickedOutside = true;
-      
-      searchContainers.forEach(container => {
+
+      searchContainers.forEach((container) => {
         if (container.contains(e.target)) {
           clickedOutside = false;
         }
       });
-      
+
       if (clickedOutside) {
         // Close all search results
         const newState = {};
-        Object.keys(showSearchResults).forEach(key => {
+        Object.keys(showSearchResults).forEach((key) => {
           newState[key] = false;
         });
         setShowSearchResults(newState);
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSearchResults]);
 
   const modalContent = (
@@ -403,7 +431,9 @@ const CreatePost = ({ onComplete }) => {
           <div className="mb-4 bg-white rounded-xl p-4">
             <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1 rounded-lg transition-colors">
               <FaCamera size={22} className="text-gray-700" />
-              <span className="text-md font-normal text-gray-900">Add Photos</span>
+              <span className="text-md font-normal text-gray-900">
+                Add Photos
+              </span>
               <input
                 type="file"
                 accept="image/*"
@@ -448,16 +478,16 @@ const CreatePost = ({ onComplete }) => {
                       <label className="block text-sm font-medium text-gray-700">
                         Bird Species in this photo:
                       </label>
-                      
+
                       {photo.birds?.length > 0 ? (
                         <div className="flex gap-2 flex-wrap mb-3">
                           {photo.birds.map((bird, idx) => (
                             <span
                               key={bird.birdId || bird.name + idx}
                               className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
-                                bird.isCustom 
-                                  ? 'bg-yellow-100 text-yellow-800' 
-                                  : 'bg-green-100 text-green-800'
+                                bird.isCustom
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-green-100 text-green-800"
                               }`}
                             >
                               <span className="font-medium">{bird.name}</span>
@@ -467,11 +497,15 @@ const CreatePost = ({ onComplete }) => {
                                 </span>
                               )}
                               {bird.isCustom && (
-                                <span className="text-xs text-gray-500 ml-1">(custom)</span>
+                                <span className="text-xs text-gray-500 ml-1">
+                                  (custom)
+                                </span>
                               )}
                               <button
                                 type="button"
-                                onClick={() => removeTagFromPhoto(photo.id, bird)}
+                                onClick={() =>
+                                  removeTagFromPhoto(photo.id, bird)
+                                }
                                 className="hover:text-red-600 font-bold text-lg ml-1"
                                 disabled={loading}
                               >
@@ -482,7 +516,8 @@ const CreatePost = ({ onComplete }) => {
                         </div>
                       ) : (
                         <p className="text-sm text-gray-500 mb-3">
-                          No bird species tagged yet. Add at least one bird species.
+                          No bird species tagged yet. Add at least one bird
+                          species.
                         </p>
                       )}
 
@@ -492,8 +527,16 @@ const CreatePost = ({ onComplete }) => {
                             <input
                               type="text"
                               value={tagInputs[photo.id] || ""}
-                              onChange={(e) => handleTagInputChange(photo.id, e.target.value)}
-                              onFocus={() => tagInputs[photo.id] && setShowSearchResults(prev => ({ ...prev, [photo.id]: true }))}
+                              onChange={(e) =>
+                                handleTagInputChange(photo.id, e.target.value)
+                              }
+                              onFocus={() =>
+                                tagInputs[photo.id] &&
+                                setShowSearchResults((prev) => ({
+                                  ...prev,
+                                  [photo.id]: true,
+                                }))
+                              }
                               onKeyPress={(e) => {
                                 if (e.key === "Enter") {
                                   e.preventDefault();
@@ -530,30 +573,48 @@ const CreatePost = ({ onComplete }) => {
                                   onClick={() => addTagToPhoto(photo.id, bird)}
                                   className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                                 >
-                                  <p className="font-medium text-gray-800">{bird.primaryName}</p>
-                                  {bird.otherNames && bird.otherNames.length > 0 && (
-                                    <p className="text-xs text-gray-400">{bird.otherNames.join(', ')}</p>
+                                  <p className="font-medium text-gray-800">
+                                    {bird.primaryName}
+                                  </p>
+                                  {bird.otherNames &&
+                                    bird.otherNames.length > 0 && (
+                                      <p className="text-xs text-gray-400">
+                                        {bird.otherNames.join(", ")}
+                                      </p>
+                                    )}
+                                  <p className="text-sm text-gray-500 italic">
+                                    {bird.scientificName}
+                                  </p>
+                                  {bird.sinhalaName && (
+                                    <p className="text-xs text-gray-400">
+                                      සිංහල: {bird.sinhalaName}
+                                    </p>
                                   )}
-                                  <p className="text-sm text-gray-500 italic">{bird.scientificName}</p>
-                                  {bird.sinhalaName && <p className="text-xs text-gray-400">සිංහල: {bird.sinhalaName}</p>}
-                                  {bird.tamilName && <p className="text-xs text-gray-400">தமிழ்: {bird.tamilName}</p>}
+                                  {bird.tamilName && (
+                                    <p className="text-xs text-gray-400">
+                                      தமிழ்: {bird.tamilName}
+                                    </p>
+                                  )}
                                 </div>
                               ))
                             ) : (
                               <div className="p-4 text-center text-gray-500">
-                                {searching[photo.id] 
-                                  ? "Searching..." 
-                                  : tagInputs[photo.id] 
-                                    ? `No birds found matching "${tagInputs[photo.id]}"`
-                                    : "Start typing to search for birds"}
+                                {searching[photo.id]
+                                  ? "Searching..."
+                                  : tagInputs[photo.id]
+                                  ? `No birds found matching "${
+                                      tagInputs[photo.id]
+                                    }"`
+                                  : "Start typing to search for birds"}
                               </div>
                             )}
                           </div>
                         )}
                       </div>
-                      
+
                       <p className="text-xs text-gray-500">
-                        Tip: Start typing to search for bird species. Add all species visible in this photo.
+                        Tip: Start typing to search for bird species. Add all
+                        species visible in this photo.
                       </p>
                     </div>
                   </div>
@@ -592,7 +653,8 @@ const CreatePost = ({ onComplete }) => {
               Discard Post?
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to discard this post? This action cannot be undone.
+              Are you sure you want to discard this post? This action cannot be
+              undone.
             </p>
             <div className="flex flex-col gap-3">
               <button
