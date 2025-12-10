@@ -317,6 +317,44 @@ exports.toggleLike = async (req, res) => {
   }
 };
 
+
+// delete posts, activate this AFTER i have done the comments parts too.
+// Delete post
+// exports.deletePost = async (req, res) => {
+//   try {
+//     const { userId } = req.body;  // Get userId from body instead of req.user
+    
+//     if (!userId) {
+//       return res.status(400).json({ error: 'User ID is required' });
+//     }
+    
+//     const post = await Post.findById(req.params.id);
+    
+//     if (!post) {
+//       return res.status(404).json({ error: 'Post not found' });
+//     }
+    
+//     // Check if user owns the post
+//     if (post.user.toString() !== userId) {
+//       return res.status(403).json({ error: 'Not authorized to delete this post' });
+//     }
+    
+//     // Delete all comments associated with this post
+//     await Comment.deleteMany({ _id: { $in: post.comments } });
+    
+//     // Delete the post
+//     await post.deleteOne();
+    
+//     res.json({
+//       success: true,
+//       message: 'Post deleted successfully'
+//     });
+//   } catch (error) {
+//     console.error('Error deleting post:', error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// };
+
 // Hide post from user
 exports.hidePost = async (req, res) => {
   try {

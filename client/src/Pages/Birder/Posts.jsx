@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  FaShare,
-  FaComment,
-  FaHeart,
-  FaRegHeart,
-  FaTrash,
-} from "react-icons/fa";
+  HiOutlineShare,
+  HiOutlineChatAlt,
+  HiOutlineHeart,
+  HiHeart,
+  HiOutlineTrash,
+} from "react-icons/hi";
 
 import profileimg from "../../assets/default_profile_pic.png";
 
@@ -20,6 +20,10 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
   const [newComment, setNewComment] = useState({});
   const [replyTo, setReplyTo] = useState({});
   const [newReply, setNewReply] = useState({});
+  //deletion
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+  
 
   // Get current logged-in user
   const userData = localStorage.getItem("user");
@@ -142,30 +146,83 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     setReplyTo((prev) => ({ ...prev, [`${postId}-${commentId}`]: false }));
   };
 
-  const handleDelete = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) {
-      return;
-    }
+  // const handleDelete = async (postId) => {
+  //   if (!window.confirm("Are you sure you want to delete this post?")) {
+  //     return;
+  //   }
 
+  //   try {
+  //     const response = await axios.delete(
+  //       `http://localhost:3001/api/posts/${postId}`,
+  //       {
+  //         data: { userId: currentUser._id || currentUser.id },
+  //       }
+  //     );
+
+  //     if (response.data.success) {
+  //       // Remove post from local state
+  //       setPosts((prevPosts) =>
+  //         prevPosts.filter((post) => post._id !== postId)
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting post:", error);
+  //     alert(error.response?.data?.error || "Failed to delete post");
+  //   }
+  // };
+
+  //deletion
+  
+  const handleDeleteClick = (e, post) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPostToDelete(post);
+    setShowDeletePopup(true);
+  };
+
+  
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
     try {
-      const response = await axios.delete(
-        `http://localhost:3001/api/posts/${postId}`,
-        {
-          data: { userId: currentUser._id || currentUser.id },
-        }
-      );
-
-      if (response.data.success) {
-        // Remove post from local state
-        setPosts((prevPosts) =>
-          prevPosts.filter((post) => post._id !== postId)
-        );
-      }
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      alert(error.response?.data?.error || "Failed to delete post");
+      setError("");
+      await api.delete(`/posts/${postToDelete._id}`);
+      await fetchChecklists();
+      setShowDeletePopup(false);
+      setPostToDelete(null);
+    } catch (err) {
+      console.error("Error deleting this post:", err);
+      setError(err.response?.data?.message || "Failed to delete post");
+      setShowDeletePopup(false);
     }
   };
+
+
+// const handleConfirmDelete = async () => {
+//   if (!postToDelete) return;
+  
+//   try {
+//     const response = await axios.delete(
+//       `http://localhost:3001/api/posts/${postToDelete._id}`,
+//       {
+//         data: { userId: currentUser._id || currentUser.id }
+//       }
+//     );
+
+//     if (response.data.success) {
+//       // Remove post from local state
+//       setPosts((prevPosts) =>
+//         prevPosts.filter((post) => post._id !== postToDelete._id)
+//       );
+//       setShowDeletePopup(false);
+//       setPostToDelete(null);
+//     }
+//   } catch (err) {
+//     console.error("Error deleting post:", err);
+//     alert(err.response?.data?.error || "Failed to delete post");
+//     setShowDeletePopup(false);
+//   }
+// };
+
 
   const handleLike = async (postId) => {
     if (!currentUser) {
@@ -345,92 +402,47 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
 
                   {/* Action buttons */}
                   <div className="flex items-center justify-end space-x-6 p-4">
-  <button className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition">
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-      />
-    </svg>
-    <span>Share</span>
-  </button>
+                    <button className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition">
+                      <HiOutlineShare className="w-5 h-5" />
+                    </button>
 
-  <button
-    onClick={() => toggleComments(post._id)}
-    className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
-  >
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-      />
-    </svg>
-    <span>Comment</span>
-  </button>
+                    <button
+                      onClick={() => toggleComments(post._id)}
+                      className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
+                    >
+                      <HiOutlineChatAlt className="w-5 h-5" />
+                      {/* <span>Comment</span> */}
+                    </button>
 
-  <button
-    onClick={() => handleLike(post._id)}
-    className={`flex items-center space-x-1 transition ${
-      isLiked
-        ? "text-[#c4501b]"
-        : "text-[#2b5b3f] hover:text-[#c4501b]"
-    }`}
-  >
-    <svg
-      className="w-5 h-5"
-      fill={isLiked ? "currentColor" : "none"}
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-      />
-    </svg>
-    <span>{post.likes?.length || 0}</span>
-  </button>
+                    <button
+                      onClick={() => handleLike(post._id)}
+                      className={`flex items-center space-x-1 transition ${
+                        isLiked
+                          ? "text-[#c4501b]"
+                          : "text-[#2b5b3f] hover:text-[#c4501b]"
+                      }`}
+                    >
+                      {isLiked ? (
+                        <HiHeart className="w-5 h-5" />
+                      ) : (
+                        <HiOutlineHeart className="w-5 h-5" />
+                      )}
+                      <span>{post.likes?.length || 0}</span>
+                    </button>
 
-  {/* Delete button - only show if user owns the post */}
-  {currentUser &&
-    (currentUser._id === post.user._id ||
-      currentUser.id === post.user._id) && (
-      <button
-        onClick={() => handleDelete(post._id)}
-        className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
-      >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-          />
-        </svg>
-        <span>Delete</span>
-      </button>
-    )}
-</div>
+                    {/* Delete button - only show if user owns the post */}
+                    {currentUser &&
+                      (currentUser._id === post.user._id ||
+                        currentUser.id === post.user._id) && (
+                        <button
+                         onClick={(e) => handleDeleteClick(e, post)}
+
+                          className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
+                        >
+                          <HiOutlineTrash className="w-5 h-5" />
+                        </button>
+                      )}
+                  </div>
 
                   {/* Comments section - keeping your existing structure */}
                   {showComments[post._id] && (
@@ -640,6 +652,20 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
           )}
         </div>
       </div>
+
+      {/* delete popup */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Post</h3>
+            <p className="text-gray-600 mb-4">Are you sure you want to delete this post?</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => { setShowDeletePopup(false); setPostToDelete(null); }} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Cancel</button>
+              <button onClick={handleConfirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
