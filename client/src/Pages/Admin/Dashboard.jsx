@@ -12,24 +12,6 @@ const Dashboard = () => {
 
 //authorization check
 const navigate = useNavigate();
-  
-  // useEffect(() => {
-  //   const user = JSON.parse(localStorage.getItem('user'));
-    
-  //   if (!user) {
-  //     navigate('/login');
-  //     return;
-  //   }
-    
-  //   if (user.role !== 'admin') {
-  //     navigate('/unauthorized');
-  //     return;
-  //   }
-  // }, [navigate]);
-
-
-
-
 
   // Mock data
   const stats = {

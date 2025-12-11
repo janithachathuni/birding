@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 //extensions
 import App from "../App";
 import Home from "../Components/Home";
+import About from "../Pages/About";
 import Error404 from "../Pages/Error404";
 import Login from "../Pages/Login";
 import SignUp from "../Pages/SignUp";
@@ -59,6 +60,11 @@ const Router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+      },
+
+      {
+        path: "/about",
+        element: <About />,
       },
 
       {
