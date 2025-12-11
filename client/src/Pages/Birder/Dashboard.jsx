@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import UserSidebar from "../../Components/UserSidebar";
 import UserSidebarRight from "../../Components/UserSidebarRight";
 import CreateProfile from "../Birder/CreateProfile";
+import CreatePost from "../Birder/CreatePost";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaPlus } from "react-icons/fa";
 
 const Dashboard = () => {
   const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -58,7 +61,23 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-white">
       <UserSidebar />
-      <div className="flex flex-1 p-4 ml-[20%] mr-[30%]">
+      <div className="flex flex-col flex-1 ml-[20%] mr-[30%]">
+        <div className="flex items-center justify-between border-b border-gray-200 px-4">
+          <div className="flex items-center gap-8">
+            <button className="px-4 py-4 font-semibold hover:bg-gray-50 transition-colors border-b-4 border-[#143829]">
+              For You
+            </button>
+            <button className="px-4 py-4 font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+              Following
+            </button>
+          </div>
+          <button
+            onClick={() => setShowCreatePost(true)}
+            className="w-10 h-10 bg-[#143829] hover:bg-[#0f2a1f] text-white rounded-full flex items-center justify-center transition-colors"
+          >
+            <FaPlus size={18} />
+          </button>
+        </div>
         <div className="p-4 bg-[#f5f6f5] w-full rounded-lg">
           <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
           {user && (
@@ -70,6 +89,11 @@ const Dashboard = () => {
 
       {/* Profile Setup Modal */}
       {showProfileSetup && <CreateProfile onComplete={handleProfileComplete} />}
+
+      {/* Create Post Modal */}
+      {showCreatePost && (
+        <CreatePost onComplete={() => setShowCreatePost(false)} />
+      )}
     </div>
   );
 };

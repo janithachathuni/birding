@@ -47,6 +47,7 @@ import BirderDiscussion from "../Pages/Birder/Discussion";
 import ProtectedRoute from "../Components/ProtectedRoute";
 import BirderSingleChecklist from "../Pages/Birder/SingleChecklist";
 import BirderSingleTrip from "../Pages/Birder/SingleTrip";
+import BirderSinglePost from "../Pages/Birder/SinglePost";
 
 //temporary!!
 import BirderCreateProfile from "../Pages/Birder/CreateProfile";
@@ -288,15 +289,15 @@ const Router = createBrowserRouter([
             ),
           },
 
-        // In your routes file (e.g., App.jsx or routes.jsx)
-{
-  path: "checklist/:checklistId",
-  element: (
-    <ProtectedRoute requiredRole="birder">
-      <BirderSingleChecklist />
-    </ProtectedRoute>
-  ),
-},
+          // In your routes file (e.g., App.jsx or routes.jsx)
+          {
+            path: "checklist/:checklistId",
+            element: (
+              <ProtectedRoute requiredRole="birder">
+                <BirderSingleChecklist />
+              </ProtectedRoute>
+            ),
+          },
 
           {
             path: "trip/:tripId",
@@ -317,7 +318,16 @@ const Router = createBrowserRouter([
       // Dynamic username route - must be at the bottom to avoid conflicts
       {
         path: "/:username",
-        element: <BirderBlog />, // This will show the user's blog
+        children: [
+          {
+            index: true,
+            element: <BirderBlog />, // This shows the user's blog
+          },
+          {
+            path: ":postId",
+            element: <BirderSinglePost />, // This shows a single post
+          },
+        ],
       },
 
       //unauthorized, error 404s - this should be last

@@ -7,6 +7,7 @@ import {
   HiHeart,
   HiOutlineTrash,
 } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 import profileimg from "../../assets/default_profile_pic.png";
 
@@ -20,10 +21,11 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
   const [newComment, setNewComment] = useState({});
   const [replyTo, setReplyTo] = useState({});
   const [newReply, setNewReply] = useState({});
-  //deletion
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
-  
+  const [showPostMenu, setShowPostMenu] = useState({});
+
+  const navigate = useNavigate();
 
   // Get current logged-in user
   const userData = localStorage.getItem("user");
@@ -40,10 +42,8 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
       let response;
 
       if (showAllPosts) {
-        // Fetch all posts (for dashboard)
         response = await axios.get("http://localhost:3001/api/posts");
       } else if (userId) {
-        // Fetch specific user's posts (for blog page)
         response = await axios.get(
           `http://localhost:3001/api/posts/user/${userId}`
         );
@@ -96,6 +96,49 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     }));
   };
 
+  const togglePostMenu = (postId) => {
+    setShowPostMenu((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
+
+  const handleCopyPostLink = (post) => {
+    const url = `${window.location.origin}/${post.user?.username}/${post._id}`;
+    navigator.clipboard.writeText(url);
+    setShowPostMenu({});
+    alert("Post link copied to clipboard!");
+  };
+
+  const handleReportPost = (post) => {
+    setShowPostMenu({});
+    alert("Post reported. We'll review this content.");
+  };
+
+  const handleBlockUser = (post) => {
+    setShowPostMenu({});
+    alert(`User @${post.user?.username} has been blocked.`);
+  };
+
+  const handleFollowUser = async (post) => {
+    if (!currentUser) {
+      alert("Please login to follow users");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:3001/api/profiles/follow/${post.user._id}`,
+        { currentUserId: currentUser._id || currentUser.id }
+      );
+      setShowPostMenu({});
+      alert(`You are now following @${post.user?.username}`);
+    } catch (error) {
+      console.error("Error following user:", error);
+      alert(error.response?.data?.message || "Failed to follow user");
+    }
+  };
+
   const addComment = (postId) => {
     if (!newComment[postId]?.trim()) return;
 
@@ -146,33 +189,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     setReplyTo((prev) => ({ ...prev, [`${postId}-${commentId}`]: false }));
   };
 
-  // const handleDelete = async (postId) => {
-  //   if (!window.confirm("Are you sure you want to delete this post?")) {
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await axios.delete(
-  //       `http://localhost:3001/api/posts/${postId}`,
-  //       {
-  //         data: { userId: currentUser._id || currentUser.id },
-  //       }
-  //     );
-
-  //     if (response.data.success) {
-  //       // Remove post from local state
-  //       setPosts((prevPosts) =>
-  //         prevPosts.filter((post) => post._id !== postId)
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting post:", error);
-  //     alert(error.response?.data?.error || "Failed to delete post");
-  //   }
-  // };
-
-  //deletion
-  
   const handleDeleteClick = (e, post) => {
     e.preventDefault();
     e.stopPropagation();
@@ -180,49 +196,29 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     setShowDeletePopup(true);
   };
 
-  
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
     try {
-      setError("");
-      await api.delete(`/posts/${postToDelete._id}`);
-      await fetchChecklists();
-      setShowDeletePopup(false);
-      setPostToDelete(null);
+      const response = await axios.delete(
+        `http://localhost:3001/api/posts/${postToDelete._id}`,
+        {
+          data: { userId: currentUser._id || currentUser.id },
+        }
+      );
+
+      if (response.data.success) {
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postToDelete._id)
+        );
+        setShowDeletePopup(false);
+        setPostToDelete(null);
+      }
     } catch (err) {
-      console.error("Error deleting this post:", err);
-      setError(err.response?.data?.message || "Failed to delete post");
+      console.error("Error deleting post:", err);
+      alert(err.response?.data?.error || "Failed to delete post");
       setShowDeletePopup(false);
     }
   };
-
-
-// const handleConfirmDelete = async () => {
-//   if (!postToDelete) return;
-  
-//   try {
-//     const response = await axios.delete(
-//       `http://localhost:3001/api/posts/${postToDelete._id}`,
-//       {
-//         data: { userId: currentUser._id || currentUser.id }
-//       }
-//     );
-
-//     if (response.data.success) {
-//       // Remove post from local state
-//       setPosts((prevPosts) =>
-//         prevPosts.filter((post) => post._id !== postToDelete._id)
-//       );
-//       setShowDeletePopup(false);
-//       setPostToDelete(null);
-//     }
-//   } catch (err) {
-//     console.error("Error deleting post:", err);
-//     alert(err.response?.data?.error || "Failed to delete post");
-//     setShowDeletePopup(false);
-//   }
-// };
-
 
   const handleLike = async (postId) => {
     if (!currentUser) {
@@ -237,7 +233,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
       );
 
       if (response.data.success) {
-        // Update the post's like status locally
         setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post._id === postId
@@ -258,11 +253,22 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     }
   };
 
-  // Prevent copying images
   const preventCopy = (e) => {
     e.preventDefault();
     alert("Copying is not allowed");
   };
+
+  // Close post menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.post-menu-container')) {
+        setShowPostMenu({});
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (loading) {
     return (
@@ -282,7 +288,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Main content */}
       <div className="flex flex-1">
         <div className="bg-white w-full">
           <div className="space-y-6 p-4">
@@ -292,6 +297,8 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
               const isLiked = post.likes?.includes(
                 currentUser?._id || currentUser?.id
               );
+              const isOwnPost = currentUser && 
+                (currentUser._id === post.user._id || currentUser.id === post.user._id);
 
               return (
                 <div
@@ -300,7 +307,10 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                 >
                   {/* Post Header */}
                   <div className="flex items-center justify-between p-4 border-b border-[#143829]">
-                    <div className="flex items-center space-x-3">
+                    <div 
+                      className="flex items-center space-x-3 cursor-pointer hover:opacity-80"
+                      onClick={() => navigate(`/${post.user?.username}/${post._id}`)}
+                    >
                       <img
                         src={
                           post.user?.profilePic
@@ -314,9 +324,60 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                         {post.user?.username || "user"}
                       </span>
                     </div>
-                    <span className="text-sm text-[#2b5b3f]">
-                      {formatDate(post.createdAt)}
-                    </span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[#2b5b3f]">
+                        {formatDate(post.createdAt)}
+                      </span>
+
+                      {/* Three-dot menu - only show if not own post */}
+                      {!isOwnPost && (
+                        <div className="relative post-menu-container">
+                          <button
+                            className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition"
+                            onClick={() => togglePostMenu(post._id)}
+                          >
+                            <svg
+                              className="w-5 h-5 text-[#143829]"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
+                          </button>
+
+                          {/* Dropdown menu */}
+                          {showPostMenu[post._id] && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
+                              <button
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                onClick={() => handleCopyPostLink(post)}
+                              >
+                                Copy Post Link
+                              </button>
+                              <button
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                onClick={() => handleFollowUser(post)}
+                              >
+                                Follow @{post.user?.username}
+                              </button>
+                              <button
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                onClick={() => handleReportPost(post)}
+                              >
+                                Report Post
+                              </button>
+                              <button
+                                className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                                onClick={() => handleBlockUser(post)}
+                              >
+                                Block User
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Image Container */}
@@ -333,7 +394,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                         }
                       />
 
-                      {/* Navigation buttons */}
                       {post.images.length > 1 && (
                         <>
                           <button
@@ -355,7 +415,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                         </>
                       )}
 
-                      {/* Image indicators */}
                       {post.images.length > 1 && (
                         <div className="absolute bottom-2 left-1/2 gap-3 transform -translate-x-1/2 flex space-x-1">
                           {post.images.map((_, index) => (
@@ -397,7 +456,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                     </div>
                   </div>
 
-                  {/* Border */}
                   <div className="border-t border-[#143829]"></div>
 
                   {/* Action buttons */}
@@ -411,7 +469,6 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                       className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
                     >
                       <HiOutlineChatAlt className="w-5 h-5" />
-                      {/* <span>Comment</span> */}
                     </button>
 
                     <button
@@ -431,20 +488,17 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                     </button>
 
                     {/* Delete button - only show if user owns the post */}
-                    {currentUser &&
-                      (currentUser._id === post.user._id ||
-                        currentUser.id === post.user._id) && (
-                        <button
-                         onClick={(e) => handleDeleteClick(e, post)}
-
-                          className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
-                        >
-                          <HiOutlineTrash className="w-5 h-5" />
-                        </button>
-                      )}
+                    {isOwnPost && (
+                      <button
+                        onClick={(e) => handleDeleteClick(e, post)}
+                        className="flex items-center space-x-1 text-[#2b5b3f] hover:text-[#a0361b] transition"
+                      >
+                        <HiOutlineTrash className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
 
-                  {/* Comments section - keeping your existing structure */}
+                  {/* Comments section */}
                   {showComments[post._id] && (
                     <div className="border-t-2 border-[#143829] bg-yellow-100">
                       {currentUser && (
@@ -657,11 +711,28 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
       {showDeletePopup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Post</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to delete this post?</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Delete Post
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this post?
+            </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => { setShowDeletePopup(false); setPostToDelete(null); }} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Cancel</button>
-              <button onClick={handleConfirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+              <button
+                onClick={() => {
+                  setShowDeletePopup(false);
+                  setPostToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
