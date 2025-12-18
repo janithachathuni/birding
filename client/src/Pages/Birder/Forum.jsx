@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import UserSidebar from "../../Components/UserSidebar";
-import UserSidebarRight from "../../Components/UserSidebarRight";
+import UserSidebarRight from "../../Components/UserSidebarForum";
 import { FaPlus, FaTimes, FaImage, FaArrowUp, FaRegComment } from "react-icons/fa";
 
 const Forum = () => {
