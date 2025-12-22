@@ -258,16 +258,38 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
     alert("Copying is not allowed");
   };
 
+  const handleBirdTagClick = async (taggedName) => {
+    try {
+      // Fetch all birds to find the one with matching name
+      const response = await axios.get("http://localhost:3001/api/birds/get");
+      const birds = response.data;
+
+      // Find bird by primaryName or scientificName
+      const bird = birds.find(
+        (b) => b.primaryName === taggedName || b.scientificName === taggedName
+      );
+
+      if (bird) {
+        navigate(`/bird/${bird._id}`);
+      } else {
+        alert("Bird not found in database");
+      }
+    } catch (error) {
+      console.error("Error finding bird:", error);
+      alert("Could not navigate to bird page");
+    }
+  };
+
   // Close post menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.post-menu-container')) {
+      if (!e.target.closest(".post-menu-container")) {
         setShowPostMenu({});
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (loading) {
@@ -297,8 +319,10 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
               const isLiked = post.likes?.includes(
                 currentUser?._id || currentUser?.id
               );
-              const isOwnPost = currentUser && 
-                (currentUser._id === post.user._id || currentUser.id === post.user._id);
+              const isOwnPost =
+                currentUser &&
+                (currentUser._id === post.user._id ||
+                  currentUser.id === post.user._id);
 
               return (
                 <div
@@ -307,24 +331,34 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                 >
                   {/* Post Header */}
                   <div className="flex items-center justify-between p-4 border-b border-[#143829]">
-                    <div 
+                    <div
                       className="flex items-center space-x-3 cursor-pointer hover:opacity-80"
-                      onClick={() => navigate(`/${post.user?.username}/${post._id}`)}
+                      onClick={() =>
+                        navigate(`/${post.user?.username}/${post._id}`)
+                      }
                     >
+                      {/* profile pic */}
                       <img
                         src={
-                          post.user?.profilePic
-                            ? `http://localhost:3001${post.user.profilePic}`
+                          post.user?.profile?.profilePic
+                            ? `http://localhost:3001${post.user.profile.profilePic}`
                             : profileimg
                         }
                         className="w-10 h-10 rounded-full object-cover border-[#2b5b3f]"
                         alt="Profile"
+                        onError={(e) => {
+                          console.log(
+                            "Image failed to load, falling back to default"
+                          );
+                          e.target.src = profileimg;
+                        }}
                       />
+
                       <span className="font-semibold text-[#143829]">
                         {post.user?.username || "user"}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-[#2b5b3f]">
                         {formatDate(post.createdAt)}
@@ -443,6 +477,7 @@ const Posts = ({ userId = null, showAllPosts = true }) => {
                       {currentImage.birds?.map((bird, index) => (
                         <span
                           key={index}
+                          onClick={() => handleBirdTagClick(bird.taggedName)}
                           className="text-[black] text-sm underline font-medium hover:text-[#c4501b] transition cursor-pointer"
                         >
                           {bird.taggedName}

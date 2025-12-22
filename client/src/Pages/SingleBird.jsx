@@ -12,6 +12,8 @@ const SingleBird = () => {
   const [birdData, setBirdData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userPhotos, setUserPhotos] = useState([]);
+  const [photosLoading, setPhotosLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams(); // Get bird ID from URL
 
@@ -51,8 +53,57 @@ const SingleBird = () => {
     fetchBirdData();
   }, [id]);
 
+  // Fetch user photos tagged with this bird
+  useEffect(() => {
+    const fetchUserPhotos = async () => {
+      if (!birdData) return;
+
+      try {
+        setPhotosLoading(true);
+        const response = await axios.get("http://localhost:3001/api/posts");
+        
+        if (response.data.success) {
+          const allPosts = response.data.data;
+          const photosWithBird = [];
+          
+          allPosts.forEach(post => {
+            post.images.forEach(image => {
+              const hasBird = image.birds?.some(bird => 
+                bird.taggedName === birdData.primaryName || 
+                bird.taggedName === birdData.scientificName
+              );
+              
+              if (hasBird) {
+                photosWithBird.push({
+                  imageUrl: image.imageUrl,
+                  postId: post._id,
+                  username: post.user?.username,
+                  userId: post.user?._id,
+                  caption: post.caption,
+                  createdAt: post.createdAt
+                });
+              }
+            });
+          });
+          
+          setUserPhotos(photosWithBird);
+        }
+      } catch (err) {
+        console.error("Error fetching user photos:", err);
+      } finally {
+        setPhotosLoading(false);
+      }
+    };
+
+    fetchUserPhotos();
+  }, [birdData]);
+
   const handleGoBack = () => {
     navigate(-1); // This navigates to the previous page in the browser history
+  };
+
+  const handlePhotoClick = (username, postId) => {
+    navigate(`/${username}/${postId}`);
   };
 
   // Determine which sidebar to show based on user role
@@ -234,6 +285,46 @@ const SingleBird = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Community Photos Section */}
+        <div className="mt-4 bg-[#f5f6f5] p-4 rounded-xl">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Community Photos
+          </h2>
+          
+          {photosLoading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Loading photos...</p>
+            </div>
+          ) : userPhotos.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">
+                No photos have been uploaded for this bird yet.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              {userPhotos.map((photo, index) => (
+                <div
+                  key={index}
+                  onClick={() => handlePhotoClick(photo.username, photo.postId)}
+                  className="group relative aspect-square bg-white rounded-lg overflow-hidden shadow hover:shadow-xl transition-shadow cursor-pointer"
+                >
+                  <img
+                    src={`http://localhost:3001${photo.imageUrl}`}
+                    alt={`Photo by ${photo.username}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-xs font-medium">
+                      @{photo.username}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
