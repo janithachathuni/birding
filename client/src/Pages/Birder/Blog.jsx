@@ -37,6 +37,10 @@ const Blog = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
+  // Block state
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+
   // Get current logged-in user
   const userData = localStorage.getItem("user");
   const currentUser = userData ? JSON.parse(userData) : null;
@@ -69,7 +73,7 @@ const Blog = () => {
           setIsOwnProfile(targetUsername === currentUser?.username);
           setUserExists(true);
 
-          // Check follow status if viewing someone else's profile
+          // Check follow status and block status if viewing someone else's profile
           if (targetUsername !== currentUser?.username && currentUserId) {
             try {
               const followStatusResponse = await axios.get(
@@ -79,8 +83,17 @@ const Blog = () => {
                 }
               );
               setIsFollowing(followStatusResponse.data.isFollowing);
+
+              // Check block status
+              const blockStatusResponse = await axios.get(
+                `http://localhost:3001/api/profiles/block-status/${userResponse.data.user._id}`,
+                {
+                  params: { currentUserId }
+                }
+              );
+              setIsBlocked(blockStatusResponse.data.isBlocked);
             } catch (error) {
-              console.error("Error checking follow status:", error);
+              console.error("Error checking follow/block status:", error);
             }
           }
         }
@@ -137,6 +150,51 @@ const Blog = () => {
     }
   };
 
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+
+  const handleBlockClick = () => {
+    if (!currentUserId) {
+      alert("Please login to block users");
+      return;
+    }
+
+    setShowMenu(false);
+    
+    // If already blocked, unblock directly without confirmation
+    if (isBlocked) {
+      handleBlockToggle();
+    } else {
+      // Show confirmation popup for blocking
+      setShowBlockConfirm(true);
+    }
+  };
+
+  const handleBlockToggle = async () => {
+    setBlockLoading(true);
+    try {
+      const endpoint = isBlocked ? 'unblock' : 'block';
+      await axios.post(
+        `http://localhost:3001/api/profiles/${endpoint}/${profileUser._id}`,
+        { currentUserId }
+      );
+
+      setIsBlocked(!isBlocked);
+      
+      // If blocking, also set following to false
+      if (!isBlocked) {
+        setIsFollowing(false);
+      }
+
+      setShowBlockConfirm(false);
+      console.log(`${isBlocked ? 'Unblocked' : 'Blocked'} successfully`);
+    } catch (error) {
+      console.error("Block/Unblock error:", error);
+      alert(error.response?.data?.message || "An error occurred");
+    } finally {
+      setBlockLoading(false);
+    }
+  };
+
   if (loading)
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -163,11 +221,6 @@ const Blog = () => {
   const handleReport = () => {
     setShowMenu(false);
     alert("Report submitted. We'll review this account.");
-  };
-
-  const handleBlock = () => {
-    setShowMenu(false);
-    alert("This account has been blocked.");
   };
 
   return (
@@ -207,7 +260,7 @@ const Blog = () => {
                           : "bg-black text-white hover:bg-gray-800"
                       }`}
                       onClick={handleFollowToggle}
-                      disabled={followLoading}
+                      disabled={followLoading || isBlocked}
                     >
                       {followLoading ? "Loading..." : isFollowing ? "Following" : "Follow"}
                     </button>
@@ -244,10 +297,13 @@ const Blog = () => {
                               Report
                             </button>
                             <button
-                              className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
-                              onClick={handleBlock}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left ${
+                                isBlocked ? 'text-green-600' : 'text-red-600'
+                              }`}
+                              onClick={handleBlockClick}
+                              disabled={blockLoading}
                             >
-                              Block Account
+                              {blockLoading ? 'Loading...' : isBlocked ? 'Unblock Account' : 'Block Account'}
                             </button>
                           </>
                         )}
@@ -321,6 +377,20 @@ const Blog = () => {
             </div>
           </div>
 
+          {/* Blocked Message */}
+          {isBlocked && !isOwnProfile && (
+            <div className="mx-6 my-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                </svg>
+                <p className="text-red-800 font-medium text-sm">
+                  You have blocked this account. You can still view their profile, but you won't see their posts in your feed.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Tab selection */}
           <div className="flex justify-around border-b border-gray-200">
             {["Posts", "Articles", "Likes"].map((tab) => (
@@ -341,7 +411,7 @@ const Blog = () => {
           {/* Content area */}
           <div className="">
             {activeTab === "Posts" && (
-  <Posts userId={profileUser._id} showAllPosts={false} />
+              <Posts userId={profileUser._id} showAllPosts={false} />
             )}
             {activeTab === "Articles" && (
               <div className="text-center text-gray-500">
@@ -359,6 +429,43 @@ const Blog = () => {
       </div>
 
       {user && <UserSidebarRight />}
+
+      {/* Block Confirmation Modal */}
+      {showBlockConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Block @{profileUser.username}?</h3>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-6">
+              They won't be able to see your posts, and you will unfollow them. You can unblock them anytime.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBlockConfirm(false)}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                disabled={blockLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBlockToggle}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+                disabled={blockLoading}
+              >
+                {blockLoading ? 'Blocking...' : 'Block'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Profile Modal - only show if it's own profile */}
       {showEditProfile && isOwnProfile && (

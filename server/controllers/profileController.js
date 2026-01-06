@@ -505,5 +505,139 @@ module.exports = {
             console.error("Check follow status error:", error);
             res.status(500).json({ message: "Server error", error: error.message });
         }
+    },
+
+    // Check block status
+    checkBlockStatus: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { currentUserId } = req.query;
+
+            console.log(`Checking block status - currentUser: ${currentUserId}, targetUser: ${userId}`);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: 'Current user ID required' });
+            }
+
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            
+            if (!currentUserProfile) {
+                return res.status(404).json({ message: 'Current user profile not found' });
+            }
+
+            const isBlocked = currentUserProfile.blocked.some(
+                id => id.toString() === userId
+            );
+            
+            console.log(`Block status result: ${isBlocked}`);
+            
+            res.json({ isBlocked });
+        } catch (error) {
+            console.error('Error checking block status:', error);
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
+    },
+
+    // Block user
+    blockUser: async (req, res) => {
+        try {
+            const { userId } = req.params; // User to block
+            const { currentUserId } = req.body; // Current logged-in user
+
+            console.log(`Block request - currentUser: ${currentUserId} blocking user: ${userId}`);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: 'Current user ID required' });
+            }
+
+            if (userId === currentUserId) {
+                return res.status(400).json({ message: 'Cannot block yourself' });
+            }
+
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            
+            if (!currentUserProfile) {
+                return res.status(404).json({ message: 'Profile not found' });
+            }
+
+            // Check if already blocked
+            const alreadyBlocked = currentUserProfile.blocked.some(
+                id => id.toString() === userId
+            );
+
+            if (alreadyBlocked) {
+                return res.status(400).json({ message: 'User already blocked' });
+            }
+
+            // Convert to ObjectId
+            const targetUserObjectId = new mongoose.Types.ObjectId(userId);
+            const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
+
+            // Add to blocked list
+            currentUserProfile.blocked.push(targetUserObjectId);
+            
+            // Also remove from following if following this user
+            currentUserProfile.following = currentUserProfile.following.filter(
+                id => id.toString() !== userId
+            );
+            
+            await currentUserProfile.save();
+
+            // Remove currentUser from the blocked user's followers
+            const blockedUserProfile = await Profile.findOne({ user: userId });
+            if (blockedUserProfile) {
+                blockedUserProfile.followers = blockedUserProfile.followers.filter(
+                    id => id.toString() !== currentUserId
+                );
+                await blockedUserProfile.save();
+            }
+
+            console.log(`User ${userId} blocked successfully by ${currentUserId}`);
+
+            res.json({ 
+                message: 'User blocked successfully',
+                blocked: currentUserProfile.blocked 
+            });
+        } catch (error) {
+            console.error('Error blocking user:', error);
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
+    },
+
+    // Unblock user
+    unblockUser: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { currentUserId } = req.body;
+
+            console.log(`Unblock request - currentUser: ${currentUserId} unblocking user: ${userId}`);
+
+            if (!currentUserId) {
+                return res.status(400).json({ message: 'Current user ID required' });
+            }
+
+            const currentUserProfile = await Profile.findOne({ user: currentUserId });
+            
+            if (!currentUserProfile) {
+                return res.status(404).json({ message: 'Profile not found' });
+            }
+
+            // Remove from blocked list
+            currentUserProfile.blocked = currentUserProfile.blocked.filter(
+                id => id.toString() !== userId
+            );
+            
+            await currentUserProfile.save();
+
+            console.log(`User ${userId} unblocked successfully by ${currentUserId}`);
+
+            res.json({ 
+                message: 'User unblocked successfully',
+                blocked: currentUserProfile.blocked 
+            });
+        } catch (error) {
+            console.error('Error unblocking user:', error);
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
     }
 };

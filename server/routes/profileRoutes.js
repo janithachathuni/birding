@@ -10,7 +10,10 @@ const {
     getProfile,
     followUser,
     unfollowUser,
-    checkFollowStatus
+    checkFollowStatus,
+    blockUser,
+    unblockUser,
+    checkBlockStatus
 } = require('../controllers/profileController');
 const router = express.Router();
 
@@ -140,5 +143,10 @@ router.get('/:userId', (req, res) => {
 router.post('/follow/:userId', followUser);
 router.post('/unfollow/:userId', unfollowUser);
 router.get('/follow-status/:userId', checkFollowStatus);
+
+// Block/Unblock Routes
+router.post('/block/:userId', blockUser);
+router.post('/unblock/:userId', unblockUser);
+router.get('/block-status/:userId', checkBlockStatus);
 
 module.exports = router;
