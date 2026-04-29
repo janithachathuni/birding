@@ -237,7 +237,7 @@ const Home = () => {
                 onClick={() => handleImageClick(index)}
               >
                 <div
-                  className="border border-black overflow-hidden transition-all duration-500 group-hover:rotate-0 group-hover:scale-150 group-hover:z-[999] relative"
+                  className="border border-black overflow-hidden transition-all duration-500 group-hover:rotate-0 group-hover:scale-120 group-hover:z-[999] relative"
                   style={{ width: "350px", height: "250px" }}
                 >
                   <img
